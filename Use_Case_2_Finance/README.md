@@ -115,7 +115,11 @@ Redirect URI: http://localhost:5678/rest/oauth2-credential/callback
 
 
 🧠 2. Gemini API Key
-Get your Gemini API key from: https://aistudio.google.com/app/apikey
+* make an account if you dont have one
+* Get your Gemini API key from: https://aistudio.google.com/app/apikey
+🧠 2. Groq API Key
+* make an account
+* Get your Groq API key from: [Groq apikey](https://console.groq.com/keys)
 
 Save as an environment variable or in n8n credentials.
 
