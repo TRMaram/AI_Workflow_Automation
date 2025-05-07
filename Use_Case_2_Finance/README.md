@@ -204,5 +204,75 @@ CREATE TABLE "public"."companies" (
 );
 
 ```
+## 3. Automated Setup : if you're using the Automated Setup 
+Automated_setup.bat ---> windows
+Automated_setup.sh --> Linux
+
+### Features of the Automated Setup Scripts
+Both scripts provide the following features:
+
+1. Automated Python Environment Setup:
+
+* Checks for Python installation
+* Creates a virtual environment
+* Installs required packages
+
+
+2. Streamlit App Creation:
+
+* Creates a Streamlit app with an n8n webhook integration button
+* Sets up the necessary boilerplate code
+
+
+3. n8n Setup Assistance:
+
+* Checks for Docker installation
+* Provides options to run n8n via Docker
+* Includes instructions for n8n workflow import
+
+
+
+
+4. Input Collection: The script will ask for:
+
+* Your project zip file location
+* Your desired project folder name
+* The name of your Streamlit script file
+* The path to your n8n workflow JSON file (if available)
+
+
+5. Project Setup:
+
+* Creates the project folder
+* Unzips your project files
+* Sets up a Python virtual environment
+* Installs dependencies
+
+
+6. Application Creation:
+
+* Creates a Streamlit app with an n8n webhook integration
+* Creates scripts to run n8n via Docker (if Docker is installed)
+
+
+7. Launch Options:
+
+* Provides you with the option to start both applications immediately
+
+
+
+After Setup
+The script will create a start_apps script (.sh or .bat) that you can run anytime to start both your Streamlit app and n8n in one go:
+
+Streamlit will be available at: http://localhost:8501
+n8n will be available at: http://localhost:5678
+
+Important: After n8n is running, you'll need to:
+
+* Create or import your workflow in n8n
+* Get the webhook URL from n8n
+* Update the N8N_WEBHOOK_URL variable in your Streamlit script
+
+
 
 
