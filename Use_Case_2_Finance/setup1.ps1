@@ -43,22 +43,24 @@ Write-Host ""
 
 # Step 1: Check and install Python if needed
 Write-Host "Checking Python installation..." -ForegroundColor Yellow
-if (-not (Test-CommandExists python)) {
+
+
+if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
     Write-Host "Python not found. Installing latest version..." -ForegroundColor Magenta
-    
+
     # Download Python installer
     $pythonUrl = "https://www.python.org/ftp/python/3.12.0/python-3.12.0-amd64.exe"
     $pythonInstaller = Join-Path $tempDir "python_installer.exe"
-    
+
     try {
         Invoke-WebRequest -Uri $pythonUrl -OutFile $pythonInstaller
-        
-        # Install Python with pip and add to PATH
+
+        # Install Python silently with pip and add to PATH
         Start-Process -FilePath $pythonInstaller -ArgumentList "/quiet", "InstallAllUsers=1", "PrependPath=1", "Include_pip=1" -Wait
-        
-        # Refresh environment variables
+
+        # Refresh environment variables (this might not take effect immediately)
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-        
+
         Write-Host "Python installed successfully!" -ForegroundColor Green
     }
     catch {
@@ -66,6 +68,7 @@ if (-not (Test-CommandExists python)) {
         exit 1
     }
 }
+
 else {
     $pythonVersion = python --version
     Write-Host "Python is already installed: $pythonVersion" -ForegroundColor Green
