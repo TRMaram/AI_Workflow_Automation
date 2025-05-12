@@ -97,25 +97,32 @@ else {
 # Step 3: Create and setup virtual environment
 Write-Host "Setting up Python virtual environment..." -ForegroundColor Yellow
 
-# Install virtualenv if not already installed
-if (-not (Test-CommandExists virtualenv)) {
-    Write-Host "Installing virtualenv package..." -ForegroundColor Magenta
-    try {
-        python -m pip install virtualenv
-        Write-Host "virtualenv installed successfully!" -ForegroundColor Green
-    }
-    catch {
-        Write-Host "Failed to install virtualenv: $($_.Exception.Message)" -ForegroundColor Red
-        exit 1
-    }
-}
-
-# Create virtual environment if it doesn't exist
+# Create virtual environment using Python's built-in venv module
 if (-not (Test-Path $venvPath)) {
     Write-Host "Creating virtual environment in $venvPath..." -ForegroundColor Magenta
     try {
-        python -m virtualenv $venvPath
-        Write-Host "Virtual environment created successfully!" -ForegroundColor Green
+        # Use Python's built-in venv module instead of virtualenv
+        python -m venv $venvPath
+        
+        # Check if venv was created successfully
+        if (Test-Path (Join-Path $venvPath "Scripts\python.exe")) {
+            Write-Host "Virtual environment created successfully!" -ForegroundColor Green
+        } else {
+            Write-Host "Virtual environment creation may have failed. Python executable not found in expected location." -ForegroundColor Red
+            
+            # Fallback to virtualenv if venv fails
+            Write-Host "Attempting fallback to virtualenv..." -ForegroundColor Yellow
+            python -m pip install virtualenv --quiet
+            python -m virtualenv $venvPath
+            
+            # Verify again
+            if (Test-Path (Join-Path $venvPath "Scripts\python.exe")) {
+                Write-Host "Virtual environment created successfully with virtualenv!" -ForegroundColor Green
+            } else {
+                Write-Host "Failed to create virtual environment with both methods." -ForegroundColor Red
+                exit 1
+            }
+        }
     }
     catch {
         Write-Host "Failed to create virtual environment: $($_.Exception.Message)" -ForegroundColor Red
@@ -124,18 +131,27 @@ if (-not (Test-Path $venvPath)) {
 }
 else {
     Write-Host "Virtual environment already exists at $venvPath" -ForegroundColor Green
+    
+    # Verify that the existing venv is valid
+    if (-not (Test-Path (Join-Path $venvPath "Scripts\python.exe"))) {
+        Write-Host "Existing virtual environment appears to be invalid. Recreating..." -ForegroundColor Yellow
+        Remove-Item -Path $venvPath -Recurse -Force
+        python -m venv $venvPath
+    }
 }
 
-# Determine the path to the activation script
+# Determine the path to the activation script and Python executable in venv
 $activateScript = Join-Path $venvPath "Scripts\Activate.ps1"
+$venvPython = Join-Path $venvPath "Scripts\python.exe"
+$venvPip = Join-Path $venvPath "Scripts\pip.exe"
 
 # Check if the activation script exists
 if (Test-Path $activateScript) {
     Write-Host "Activating virtual environment..." -ForegroundColor Magenta
     try {
-        # Activate the virtual environment
-        & $activateScript
-        Write-Host "Virtual environment activated!" -ForegroundColor Green
+        # Use direct paths to executables instead of relying on PATH modification
+        # This is more reliable in script contexts
+        Write-Host "Virtual environment ready to use!" -ForegroundColor Green
     }
     catch {
         Write-Host "Failed to activate virtual environment: $($_.Exception.Message)" -ForegroundColor Red
@@ -152,7 +168,19 @@ Write-Host "Looking for requirements.txt..." -ForegroundColor Yellow
 if (Test-Path "requirements.txt") {
     Write-Host "Installing Python packages from requirements.txt into virtual environment..." -ForegroundColor Magenta
     try {
-        pip install -r requirements.txt
+        # Use the pip executable directly from the virtual environment
+        & $venvPip install -r requirements.txt
+        
+        # Verify streamlit is installed in the virtual environment
+        $streamlitInstalled = & $venvPython -c "import pkgutil; print('streamlit' if pkgutil.find_loader('streamlit') else 'not_found')"
+        if ($streamlitInstalled -eq "streamlit") {
+            Write-Host "Streamlit is installed in the virtual environment!" -ForegroundColor Green
+        } else {
+            Write-Host "Warning: Streamlit doesn't appear to be installed. Make sure it's listed in requirements.txt" -ForegroundColor Yellow
+            Write-Host "Attempting to install Streamlit..." -ForegroundColor Yellow
+            & $venvPip install streamlit
+        }
+        
         Write-Host "Python packages installed successfully in virtual environment!" -ForegroundColor Green
     }
     catch {
@@ -161,7 +189,9 @@ if (Test-Path "requirements.txt") {
 }
 else {
     Write-Host "requirements.txt not found in current directory." -ForegroundColor Yellow
-    Write-Host "Skipping Python packages installation." -ForegroundColor Yellow
+    Write-Host "Installing basic packages including Streamlit..." -ForegroundColor Yellow
+    & $venvPip install streamlit
+    Write-Host "Basic packages installed." -ForegroundColor Green
 }
 
 # Step 4: Install Node.js and npm
@@ -243,12 +273,43 @@ $runStreamlitContent = @"
 # Run Streamlit app script
 # This script activates the virtual environment and runs the Streamlit app
 
+# Path to the virtual environment and app
+`$venvPath = "$venvPath"
+`$streamlitAppPath = "$streamlitAppPath"
+
+# Check if virtual environment exists
+if (-not (Test-Path `$venvPath)) {
+    Write-Host "Virtual environment not found at `$venvPath" -ForegroundColor Red
+    Write-Host "Please run the setup script first." -ForegroundColor Red
+    exit 1
+}
+
 # Activate virtual environment
-& "$venvPath\Scripts\Activate.ps1"
+Write-Host "Activating virtual environment..." -ForegroundColor Cyan
+& "`$venvPath\Scripts\Activate.ps1"
+
+# Check if activation was successful (looking for the virtual env prefix in prompt)
+if (-not (`$env:VIRTUAL_ENV -eq `$venvPath)) {
+    Write-Host "Virtual environment activation may have failed." -ForegroundColor Yellow
+    # Try direct paths anyway
+}
+
+# Check if Streamlit app exists
+if (-not (Test-Path `$streamlitAppPath)) {
+    Write-Host "Streamlit app not found at `$streamlitAppPath" -ForegroundColor Red
+    Write-Host "Please make sure the app file exists." -ForegroundColor Red
+    exit 1
+}
 
 # Run Streamlit app
-Write-Host "Starting Streamlit app: $streamlitAppName..." -ForegroundColor Cyan
-streamlit run "$streamlitAppPath"
+Write-Host "Starting Streamlit app: `$([System.IO.Path]::GetFileName(`$streamlitAppPath))..." -ForegroundColor Cyan
+& "`$venvPath\Scripts\streamlit.exe" run "`$streamlitAppPath"
+
+# If the direct path doesn't work, try using the activated environment
+if (`$LASTEXITCODE -ne 0) {
+    Write-Host "Trying alternative method to run Streamlit..." -ForegroundColor Yellow
+    streamlit run "`$streamlitAppPath"
+}
 "@
 
 # Write the startup script
@@ -304,21 +365,42 @@ else {
 
 # Virtual environment info
 if (Test-Path $venvPath) {
-    Write-Host "Virtual Environment: Created at $venvPath" -ForegroundColor Green
+    # Extra validation of virtual environment
+    $venvPythonExists = Test-Path (Join-Path $venvPath "Scripts\python.exe")
+    $venvPipExists = Test-Path (Join-Path $venvPath "Scripts\pip.exe")
     
-    # Check if Streamlit app exists
-    if (Test-Path $streamlitAppPath) {
-        Write-Host "Streamlit App: Found at $streamlitAppPath" -ForegroundColor Green
-        Write-Host ""
-        Write-Host "To run your Streamlit app, open a new terminal and run: .\run_streamlit_app.ps1" -ForegroundColor Cyan
-    }
-    else {
-        Write-Host "Streamlit App: $streamlitAppName not found in project directory" -ForegroundColor Yellow
-        Write-Host "You'll need to create a Streamlit app file named $streamlitAppName" -ForegroundColor Yellow
+    if ($venvPythonExists -and $venvPipExists) {
+        Write-Host "Virtual Environment: Created and verified at $venvPath" -ForegroundColor Green
+        
+        # Test if streamlit is installed in the virtual environment
+        $streamlitExe = Join-Path $venvPath "Scripts\streamlit.exe"
+        if (Test-Path $streamlitExe) {
+            Write-Host "Streamlit: Successfully installed in virtual environment" -ForegroundColor Green
+        } else {
+            Write-Host "Streamlit: Not found in virtual environment" -ForegroundColor Yellow
+            Write-Host "  - You may need to add streamlit to your requirements.txt" -ForegroundColor Yellow
+        }
+        
+        # Check if Streamlit app exists
+        if (Test-Path $streamlitAppPath) {
+            Write-Host "Streamlit App: Found at $streamlitAppPath" -ForegroundColor Green
+            Write-Host ""
+            Write-Host "To run your Streamlit app, open a new terminal and run: .\run_streamlit_app.ps1" -ForegroundColor Cyan
+        }
+        else {
+            Write-Host "Streamlit App: $streamlitAppName not found in project directory" -ForegroundColor Yellow
+            Write-Host "  - Create a file named $streamlitAppName with your Streamlit application code" -ForegroundColor Yellow
+            Write-Host "  - Then run: .\run_streamlit_app.ps1" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "Virtual Environment: Found at $venvPath but appears incomplete" -ForegroundColor Red
+        Write-Host "  - Python executable exists: $venvPythonExists" -ForegroundColor Red
+        Write-Host "  - Pip executable exists: $venvPipExists" -ForegroundColor Red
+        Write-Host "  - Try deleting the venv folder and running this script again" -ForegroundColor Yellow
     }
 }
 else {
-    Write-Host "Virtual Environment: Failed to create" -ForegroundColor Red
+    Write-Host "Virtual Environment: Failed to create at $venvPath" -ForegroundColor Red
 }
 
 Write-Host "=============================================" -ForegroundColor Cyan
