@@ -1,165 +1,226 @@
-# Simple AI Workflow Automation Setup Script
-# This script sets up the environment for AI Workflow Automation
+# setup_environment.ps1
+# Script to set up development environment with Python, pip, Node.js, npm, and n8n
 
-# Set UTF-8 as the output encoding
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+# Set execution policy to allow script to run
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
-# Create a directory for the project
-$projectDir = Join-Path $PSScriptRoot "finance_automation"
-if (-not (Test-Path $projectDir)) {
-    New-Item -ItemType Directory -Path $projectDir | Out-Null
-    Write-Host "Created project directory: $projectDir"
-} else {
-    Write-Host "Project directory already exists: $projectDir"
+# Function to check if command exists
+function Test-CommandExists {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Command
+    )
+    
+    $exists = $null -ne (Get-Command -Name $Command -ErrorAction SilentlyContinue)
+    return $exists
 }
 
-# Check for Python
-$pythonCommand = $null
-$pythonCommands = @("python", "python3")
+# Create a temporary directory for downloads
+$tempDir = Join-Path $env:TEMP "installer_temp"
+if (-not (Test-Path $tempDir)) {
+    New-Item -ItemType Directory -Path $tempDir | Out-Null
+}
 
-foreach ($cmd in $pythonCommands) {
+Write-Host "========== Environment Setup Script ==========" -ForegroundColor Cyan
+Write-Host "This script will install the following:" -ForegroundColor Cyan
+Write-Host "- Python (latest version if not installed)" -ForegroundColor Cyan
+Write-Host "- pip (if not installed)" -ForegroundColor Cyan
+Write-Host "- Python packages from requirements.txt" -ForegroundColor Cyan
+Write-Host "- Node.js (latest version)" -ForegroundColor Cyan
+Write-Host "- npm (latest version)" -ForegroundColor Cyan
+Write-Host "- n8n workflow automation tool" -ForegroundColor Cyan
+Write-Host "=============================================" -ForegroundColor Cyan
+Write-Host ""
+
+# Step 1: Check and install Python if needed
+Write-Host "Checking Python installation..." -ForegroundColor Yellow
+if (-not (Test-CommandExists python)) {
+    Write-Host "Python not found. Installing latest version..." -ForegroundColor Magenta
+    
+    # Download Python installer
+    $pythonUrl = "https://www.python.org/ftp/python/3.12.0/python-3.12.0-amd64.exe"
+    $pythonInstaller = Join-Path $tempDir "python_installer.exe"
+    
     try {
-        $pythonVersion = Invoke-Expression "$cmd --version" 2>&1
-        if ($pythonVersion -match "Python 3") {
-            $pythonCommand = $cmd
-            Write-Host "Found Python: $pythonVersion"
-            break
-        }
-    } catch {
-        # Command not found, continue to next
+        Invoke-WebRequest -Uri $pythonUrl -OutFile $pythonInstaller
+        
+        # Install Python with pip and add to PATH
+        Start-Process -FilePath $pythonInstaller -ArgumentList "/quiet", "InstallAllUsers=1", "PrependPath=1", "Include_pip=1" -Wait
+        
+        # Refresh environment variables
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+        
+        Write-Host "Python installed successfully!" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Failed to install Python: $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
     }
 }
-
-if ($pythonCommand -eq $null) {
-    Write-Host "Python 3 not found. Please install Python 3 and try again."
-    exit 1
+else {
+    $pythonVersion = python --version
+    Write-Host "Python is already installed: $pythonVersion" -ForegroundColor Green
 }
 
-# Create Python virtual environment
-$venvPath = Join-Path $projectDir "venv"
-if (-not (Test-Path $venvPath)) {
-    Write-Host "Creating Python virtual environment..."
-    & $pythonCommand -m venv $venvPath
-    Write-Host "Created Python virtual environment"
-} else {
-    Write-Host "Python virtual environment already exists"
+# Step 2: Check and install pip if needed
+Write-Host "Checking pip installation..." -ForegroundColor Yellow
+if (-not (Test-CommandExists pip)) {
+    Write-Host "pip not found. Installing..." -ForegroundColor Magenta
+    
+    # Download get-pip.py
+    $getPipUrl = "https://bootstrap.pypa.io/get-pip.py"
+    $getPipScript = Join-Path $tempDir "get-pip.py"
+    
+    try {
+        Invoke-WebRequest -Uri $getPipUrl -OutFile $getPipScript
+        python $getPipScript
+        Write-Host "pip installed successfully!" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Failed to install pip: $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
+    }
+}
+else {
+    Write-Host "pip is already installed." -ForegroundColor Green
 }
 
-# Create requirements.txt file
-$requirementsPath = Join-Path $projectDir "requirements.txt"
-@"
-streamlit==1.27.0
-pandas==2.1.0
-matplotlib==3.7.3
-plotly==5.16.1
-python-dotenv==1.0.0
-requests==2.31.0
-"@ | Out-File -FilePath $requirementsPath -Encoding utf8
-Write-Host "Created requirements.txt file"
+# Step 3: Install packages from requirements.txt if it exists
+Write-Host "Looking for requirements.txt..." -ForegroundColor Yellow
+if (Test-Path "requirements.txt") {
+    Write-Host "Installing Python packages from requirements.txt..." -ForegroundColor Magenta
+    try {
+        python -m pip install -r requirements.txt
+        Write-Host "Python packages installed successfully!" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Failed to install Python packages: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+else {
+    Write-Host "requirements.txt not found in current directory." -ForegroundColor Yellow
+    Write-Host "Skipping Python packages installation." -ForegroundColor Yellow
+}
 
-# Create .env file
-$envPath = Join-Path $projectDir ".env"
-@"
-# n8n Configuration
-N8N_PORT=5678
-N8N_WEBHOOK_URL=http://localhost:5678/webhook/
-
-# Streamlit Configuration
-STREAMLIT_PORT=8501
-"@ | Out-File -FilePath $envPath -Encoding utf8
-Write-Host "Created .env file"
-
-# Create docker-compose.yml
-$dockerComposePath = Join-Path $projectDir "docker-compose.yml"
-@"
-version: '3'
-
-services:
-  n8n:
-    image: n8nio/n8n
-    ports:
-      - "\${N8N_PORT}:5678"
-    volumes:
-      - n8n_data:/home/node/.n8n
-    environment:
-      - N8N_HOST=n8n
-      - NODE_ENV=production
-      - WEBHOOK_URL=http://localhost:\${N8N_PORT}/
-    restart: always
-
-volumes:
-  n8n_data:
-"@ | Out-File -FilePath $dockerComposePath -Encoding utf8
-Write-Host "Created docker-compose.yml file"
-
-# Create Streamlit script
-$streamlitScript = Join-Path $projectDir "app.py"
-@"
-import streamlit as st
-import pandas as pd
-import requests
-import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-N8N_WEBHOOK_URL = os.getenv('N8N_WEBHOOK_URL')
-
-# Set page configuration
-st.set_page_config(page_title="n8n Workflow Trigger", page_icon="📊")
-
-def main():
-    st.title("Finance Data Processing with n8n")
-    st.write("Upload financial data to process through your n8n workflow")
+# Step 4: Install Node.js and npm
+Write-Host "Checking Node.js installation..." -ForegroundColor Yellow
+if (-not (Test-CommandExists node)) {
+    Write-Host "Node.js not found. Installing latest version..." -ForegroundColor Magenta
     
-    # Input for n8n webhook URL
-    webhook_url = st.text_input("n8n Webhook URL", value=N8N_WEBHOOK_URL)
+    # Download Node.js installer
+    $nodeUrl = "https://nodejs.org/dist/latest/node-v20.11.1-x64.msi"
+    $nodeInstaller = Join-Path $tempDir "node_installer.msi"
     
-    # File uploader
-    uploaded_file = st.file_uploader("Upload your financial data CSV", type=["csv"])
-    
-    if uploaded_file is not None:
-        # Read and show the data
-        df = pd.read_csv(uploaded_file)
-        st.write("Preview of uploaded data:")
-        st.dataframe(df.head())
+    try {
+        Invoke-WebRequest -Uri $nodeUrl -OutFile $nodeInstaller
+        Start-Process -FilePath "msiexec.exe" -ArgumentList "/i", $nodeInstaller, "/quiet", "/norestart" -Wait
         
-        # Process button
-        if st.button("Process Data"):
-            with st.spinner("Processing data through n8n workflow..."):
-                try:
-                    # Convert DataFrame to JSON
-                    data = df.to_dict(orient="records")
-                    
-                    # Send to n8n webhook
-                    response = requests.post(
-                        webhook_url, 
-                        json={"data": data}
-                    )
-                    
-                    if response.status_code == 200:
-                        st.success("Data successfully processed!")
-                        # Display the result from n8n if available
-                        try:
-                            result = response.json()
-                            st.json(result)
-                        except:
-                            st.write("Process completed.")
-                    else:
-                        st.error(f"Error: {response.status_code}")
-                        st.write(response.text)
-                except Exception as e:
-                    st.error(f"An error occurred: {e}")
+        # Refresh environment variables
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+        
+        Write-Host "Node.js installed successfully!" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Failed to install Node.js: $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
+    }
+}
+else {
+    $nodeVersion = node --version
+    Write-Host "Node.js is already installed: $nodeVersion" -ForegroundColor Green
+}
 
-if __name__ == "__main__":
-    main()
-"@ | Out-File -FilePath $streamlitScript -Encoding utf8
-Write-Host "Created Streamlit application script"
+# Step 5: Check npm version and update if needed
+Write-Host "Checking npm installation..." -ForegroundColor Yellow
+if (Test-CommandExists npm) {
+    $npmVersion = npm --version
+    Write-Host "npm is installed: $npmVersion" -ForegroundColor Green
+    
+    # Update npm to latest
+    Write-Host "Updating npm to latest version..." -ForegroundColor Magenta
+    try {
+        npm install -g npm@latest
+        $newNpmVersion = npm --version
+        Write-Host "npm updated to version: $newNpmVersion" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Failed to update npm: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+else {
+    Write-Host "npm should have been installed with Node.js. Something went wrong." -ForegroundColor Red
+}
 
-Write-Host "`nSetup completed successfully!"
-Write-Host "`nNext steps:"
-Write-Host "1. Navigate to the project directory: cd $projectDir"
-Write-Host "2. Activate the virtual environment: ./venv/Scripts/Activate.ps1"
-Write-Host "3. Install Python packages: pip install -r requirements.txt"
-Write-Host "4. Start n8n with Docker: docker-compose up"
-Write-Host "5. Start Streamlit: streamlit run app.py"
+# Step 6: Install n8n
+Write-Host "Installing n8n..." -ForegroundColor Yellow
+try {
+    npm install -g n8n
+    Write-Host "n8n installed successfully!" -ForegroundColor Green
+    
+    # Verify n8n installation
+    if (Test-CommandExists n8n) {
+        $n8nVersion = n8n --version
+        Write-Host "n8n version: $n8nVersion" -ForegroundColor Green
+    }
+    else {
+        Write-Host "n8n command not found. Installation may have failed." -ForegroundColor Red
+    }
+}
+catch {
+    Write-Host "Failed to install n8n: $($_.Exception.Message)" -ForegroundColor Red
+}
+
+# Clean up temporary files
+if (Test-Path $tempDir) {
+    Remove-Item -Path $tempDir -Recurse -Force
+}
+
+Write-Host ""
+Write-Host "=============================================" -ForegroundColor Cyan
+Write-Host "Installation summary:" -ForegroundColor Cyan
+
+# Display final versions
+if (Test-CommandExists python) {
+    $pythonFinalVersion = python --version
+    Write-Host "Python: $pythonFinalVersion" -ForegroundColor Green
+}
+else {
+    Write-Host "Python: Not installed" -ForegroundColor Red
+}
+
+if (Test-CommandExists pip) {
+    $pipFinalVersion = pip --version
+    Write-Host "pip: Installed" -ForegroundColor Green
+}
+else {
+    Write-Host "pip: Not installed" -ForegroundColor Red
+}
+
+if (Test-CommandExists node) {
+    $nodeFinalVersion = node --version
+    Write-Host "Node.js: $nodeFinalVersion" -ForegroundColor Green
+}
+else {
+    Write-Host "Node.js: Not installed" -ForegroundColor Red
+}
+
+if (Test-CommandExists npm) {
+    $npmFinalVersion = npm --version
+    Write-Host "npm: $npmFinalVersion" -ForegroundColor Green
+}
+else {
+    Write-Host "npm: Not installed" -ForegroundColor Red
+}
+
+if (Test-CommandExists n8n) {
+    $n8nFinalVersion = n8n --version
+    Write-Host "n8n: $n8nFinalVersion" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "To start n8n, open a new terminal and run: n8n start" -ForegroundColor Cyan
+}
+else {
+    Write-Host "n8n: Not installed" -ForegroundColor Red
+}
+
+Write-Host "=============================================" -ForegroundColor Cyan
+Write-Host "Setup complete!" -ForegroundColor Cyan
