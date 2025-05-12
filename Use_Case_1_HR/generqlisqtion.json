@@ -1,0 +1,3049 @@
+{
+  "name": "generqlisqtion",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.choices[0].message.content }}  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a434479a-3837-435c-8507-13da528e69f9",
+      "name": "Get only the text",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        480,
+        300
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"extract the text within the image, i want the output to only include the extracted text\"\n        },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"data:image/jpeg;base64,{{ $json.data }}\"\n          }\n        }\n      ]\n    }\n  ],\n  \"model\": \"meta-llama/llama-4-scout-17b-16e-instruct\"\n}",
+        "options": {}
+      },
+      "id": "1eea691b-c516-4a60-97d8-4b0d247aecbb",
+      "name": "HTTP Request GROQ LLAVA",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        160,
+        300
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "id": "8feff7fe-bb20-4157-9eb1-8fe974c5a386",
+      "name": "convert the image file to base64",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -160,
+        300
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Set Up\n",
+        "height": 661,
+        "width": 711,
+        "color": 4
+      },
+      "id": "795f7f25-a93f-49c6-b45a-4e74084232c3",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1180,
+        20
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Using GROQ API\n\nNow we send the image in base64 to the API and get the description of the image.",
+        "height": 665,
+        "width": 430
+      },
+      "id": "88f58ab9-48ce-45e2-8e33-0d52a5e847ba",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        20
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Set File ID').item.json.file_id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "id": "95b2f5d3-46cf-4aae-a150-a065e094d1f1",
+      "name": "Download File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -600,
+        320
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ewONX9hozu66EdRg",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1YomIEet-r9aWYD5SJAUTvBuY8eBgbEwp",
+          "mode": "list",
+          "cachedResultName": "use_case_Contrat_fournisseur",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1YomIEet-r9aWYD5SJAUTvBuY8eBgbEwp"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "344870bb-72db-40d3-85b4-6c4a9eec2a98",
+      "name": "File Created",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1080,
+        220
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ewONX9hozu66EdRg",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1YomIEet-r9aWYD5SJAUTvBuY8eBgbEwp",
+          "mode": "list",
+          "cachedResultName": "use_case_Contrat_fournisseur",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1YomIEet-r9aWYD5SJAUTvBuY8eBgbEwp"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "e48e4418-61de-4819-ba45-be0c54710ba6",
+      "name": "File Updated",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1080,
+        420
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ewONX9hozu66EdRg",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10646eae-ae46-4327-a4dc-9987c2d76173",
+              "name": "file_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f4536df5-d0b1-4392-bf17-b8137fb31a44",
+              "name": "file_type",
+              "value": "={{ $json.mimeType }}",
+              "type": "string"
+            },
+            {
+              "id": "a9c24cd8-879c-49f3-a31a-2383acc9734e",
+              "name": "file_name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6b034a2a-729f-4775-a672-8b4bda8cbe68",
+      "name": "Set File ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -840,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.file_type }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a26e1ff6-ac77-43e2-8cdf-34d1cd45b43a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "b3d19f78-cc97-4287-9570-85430e65acf4",
+                    "leftValue": "={{ $json.file_type }}",
+                    "rightValue": "image/jpeg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "f88aa616-408c-4241-834d-a20015220abc",
+                    "leftValue": "={{ $json.file_type }}",
+                    "rightValue": "application/vnd.google-apps.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b58225c6-2b8d-465e-8fa2-0c759d8c7ce9",
+      "name": "Switch1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -420,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        120
+      ],
+      "id": "032e4348-9275-46d0-92fb-395cfed4be62",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "content": "## Extract",
+        "height": 660,
+        "width": 420,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -440,
+        20
+      ],
+      "typeVersion": 1,
+      "id": "896e8275-0458-480b-a5a1-a8f999862ccf",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        720,
+        300
+      ],
+      "id": "4ae55362-fb5f-4a5b-9bae-dca5ff51da73",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "content": "## Classification",
+        "height": 700,
+        "width": 800
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1300,
+        -20
+      ],
+      "typeVersion": 1,
+      "id": "5e2af2fa-be8c-4da4-95e3-caa0299f7e6b",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=analyze this text {{$json.choices[0].message.content  }}and classify this supply contract based on the type and service the contract provides, for example : a hardware supply contract or a cleaning supply contract\n\ni want the output to be in json format and to only contain the category of the contract as type of contract, the client and the Prestaire",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1460,
+        300
+      ],
+      "id": "b0318dc1-64b4-420d-bd98-a97241d27158",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-thinking-exp",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1480,
+        520
+      ],
+      "id": "d9e9eafd-4c00-4833-8311-fc2569a74dda",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wlWExbBHelIHUbDo",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nlet jsonString =$input.first().json.output ;\n\n// Step 1: Remove the extra formatting and trim the string\nlet cleanedJsonString = jsonString.replace(/```json\\n|\\n```/g, \"\").trim();\n\n// Step 2: Parse the cleaned string into a JSON object\nlet data = JSON.parse(cleanedJsonString);\n\n// Normalize keys for easier access\nlet normalizedData = {};\nfor (let key in data) {\n  if (data.hasOwnProperty(key)) {\n    let normalizedKey = key.toLowerCase().replace(/[_\\s]+/g, '');\n    normalizedData[normalizedKey] = data[key];\n  }\n}\n\n// Helper to get value by key aliases\nconst getValue = (aliases) => {\n  for (let alias of aliases) {\n    let norm = alias.toLowerCase().replace(/[_\\s]+/g, '');\n    if (normalizedData[norm] !== undefined) {\n      return normalizedData[norm];\n    }\n  }\n  return null;\n};\n\n// Extract values using key variations\nlet typeOfContract = getValue([\"type of contract\", \"type_of_contract\"]);\nlet client = getValue([\"client\", \"Client\"]);\nlet prestataire = getValue([\"prestataire\", \"prestaire\", \"Prestaire\", \"provider\",\"Provider\",\"Prestataire\",\"supplier\",\"Supplier\"]);\n\nreturn {\n  typeOfContract,\n  client,\n  prestataire\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1880,
+        300
+      ],
+      "id": "5e4a987c-2f6f-45cb-8926-773bb0f27ad2",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.data || $json.text || $json.concatenated_data || $json.JSON || $json.choices[0].message.content }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "=file_id",
+                "value": "={{ $('Set File ID').first().json.file_id }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "869c4ebe-5d0f-4a8c-ab57-b72d58c5ea3c",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        980,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "separator": "\\n",
+        "chunkOverlap": 100
+      },
+      "id": "bbb89afd-a6f5-4ea2-96cd-ce672a1396aa",
+      "name": "Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents_3_duplicate",
+          "mode": "list",
+          "cachedResultName": "documents_3_duplicate"
+        },
+        "options": {
+          "queryName": "match_documents_4"
+        }
+      },
+      "id": "7ca04d47-b734-4337-9070-72bf7defcadd",
+      "name": "Insert into Supabase Vectorstore",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        860,
+        120
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        880,
+        500
+      ],
+      "id": "243142bd-2239-4e7f-be98-8185802b8776",
+      "name": "Embeddings Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "WT9y62sST1qWljk5",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Save into db \nwith character embedder",
+        "height": 680,
+        "width": 820,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        440,
+        20
+      ],
+      "typeVersion": 1,
+      "id": "84a84346-0376-4cdf-af1b-30a8a38bd48e",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.text ||$json.data }}  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "132cd58c-a665-4d74-b96a-594255ccf950",
+      "name": "Get only the text1",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        480,
+        520
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "52ada8f7-4505-486f-ad6c-a2a9b254242c",
+      "name": "Get only the text2",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        480,
+        140
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "## Généralisation",
+        "height": 1240,
+        "width": 1840,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2120,
+        -100
+      ],
+      "typeVersion": 1,
+      "id": "3e46a426-ffaf-48c9-9bcf-208e3b2ec4cc",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "name": "database",
+        "description": "Contains all the user's documents that you need to check for context to answer user questions.",
+        "topK": 15
+      },
+      "id": "c093b69c-bbd9-442a-a555-95b46d943ab7",
+      "name": "Retrieve Documents",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        720,
+        1160
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "887e1fdd-6ee6-43cb-baac-1084c1895428",
+      "name": "Postgres Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1,
+      "position": [
+        540,
+        1240
+      ],
+      "notesInFlow": false,
+      "credentials": {
+        "postgres": {
+          "id": "K7nRP77ni3gmoVVU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a9a245e-f1a1-4282-bb02-a81ffe629f0f",
+              "name": "chatInput",
+              "value": "={{ $json?.chatInput || $json.body.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "b80831d8-c653-4203-8706-adedfdb98f77",
+              "name": "sessionId",
+              "value": "={{ $json?.sessionId || $json.body.sessionId}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2bd408d4-d15c-4153-9793-4f8178ec29a3",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        200,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "id": "83b5e4c2-a705-497f-bf10-32814d948ada",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -60,
+        1040
+      ],
+      "webhookId": "bbec5bda-5ba8-45fc-a181-60f3f876eea4"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a personal assistant who helps answer questions from a corpus of documents when you don't know the answer yourself."
+        }
+      },
+      "id": "a6acf1cc-eac1-4551-9bca-0617ee9e0616",
+      "name": "RAG AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        420,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "tableName": {
+          "__rl": true,
+          "value": "documents_3_duplicate",
+          "mode": "list",
+          "cachedResultName": "documents_3_duplicate"
+        },
+        "options": {
+          "queryName": "match_documents_4"
+        }
+      },
+      "id": "2a8f39b8-5a52-4403-a0b5-4ff8033c6148",
+      "name": "Supabase Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        640,
+        1320
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        640,
+        1500
+      ],
+      "id": "d1effdb0-6cca-4d17-aa1b-7029bec64f8b",
+      "name": "Embeddings Cohere1",
+      "credentials": {
+        "cohereApi": {
+          "id": "WT9y62sST1qWljk5",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Retrieval  cohere embed 1024",
+        "height": 780,
+        "width": 1780,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -160,
+        880
+      ],
+      "typeVersion": 1,
+      "id": "4a0ff9fb-5686-4d30-a661-78699193de6d",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        520
+      ],
+      "id": "36e40948-259e-4125-a8fa-72785c8a4c54",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "model": "qwen-qwq-32b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        400,
+        1240
+      ],
+      "id": "99de2eae-d95d-43c3-9ac9-14482c11cec0",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "hJ8t1ayITxjcfox7",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "qwen-qwq-32b",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        920,
+        1340
+      ],
+      "id": "204ea4fb-18df-4b98-a3f2-c0830b895f32",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "hJ8t1ayITxjcfox7",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "id": "75dfc851-50ff-4383-a1a8-15d413ca4159",
+      "name": "Extract Document Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        360,
+        2200
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "b0097bf1-4f8f-4c08-bb0d-6bfc84b1cdd0",
+      "name": "Extract PDF Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        860,
+        1760
+      ]
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.data || $json.text || $json.concatenated_data }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "=file_id",
+                "value": "={{ $('Set File ID1').first().json.file_id }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "77b5775a-01b6-4e14-9fd4-39feb0b29d2d",
+      "name": "Default Data Loader1",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        2080
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Tool to Add File to Vector DB",
+        "height": 667,
+        "width": 2573,
+        "color": 5
+      },
+      "id": "ab6ddc95-1d27-4899-acf6-553450fc04d8",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        1700
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Set File ID1').item.json.file_id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "id": "90705dc0-bb56-45ae-b29c-33fc189a704f",
+      "name": "Download File1",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        340,
+        1860
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "0dNlbLUFqbhHSOqM",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1YomIEet-r9aWYD5SJAUTvBuY8eBgbEwp",
+          "mode": "list",
+          "cachedResultName": "use_case_Contrat_fournisseur",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1YomIEet-r9aWYD5SJAUTvBuY8eBgbEwp"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "30b41d60-56b7-4b99-a4f1-148023ea8d14",
+      "name": "File Created1",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        1760
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "0dNlbLUFqbhHSOqM",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1YomIEet-r9aWYD5SJAUTvBuY8eBgbEwp",
+          "mode": "list",
+          "cachedResultName": "use_case_Contrat_fournisseur",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1YomIEet-r9aWYD5SJAUTvBuY8eBgbEwp"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "c0220b85-2d82-4c77-871d-ac84140f163c",
+      "name": "File Updated1",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        1980
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "0dNlbLUFqbhHSOqM",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10646eae-ae46-4327-a4dc-9987c2d76173",
+              "name": "file_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f4536df5-d0b1-4392-bf17-b8137fb31a44",
+              "name": "file_type",
+              "value": "={{ $json.mimeType }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "96e87d25-1d70-42be-86d7-77e3e8e42b80",
+      "name": "Set File ID1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -140,
+        1860
+      ]
+    },
+    {
+      "parameters": {
+        "separator": "\\n",
+        "chunkOverlap": 100
+      },
+      "id": "e0c44334-345c-4b91-a3ad-61daa75e8375",
+      "name": "Character Text Splitter1",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1740,
+        2200
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Set File ID1').item.json.file_type }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a26e1ff6-ac77-43e2-8cdf-34d1cd45b43a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "2ae7faa7-a936-4621-a680-60c512163034",
+                    "leftValue": "={{ $('Set File ID1').item.json.file_type }}",
+                    "rightValue": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "fc193b06-363b-4699-a97d-e5a850138b0e",
+                    "leftValue": "={{ $('Set File ID1').item.json.file_type }}",
+                    "rightValue": "application/vnd.google-apps.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": 2
+        }
+      },
+      "id": "41306e41-bac7-44fd-937b-66226f2a5744",
+      "name": "Switch2",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        560,
+        1860
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents_3_duplicate",
+          "mode": "list",
+          "cachedResultName": "documents_3_duplicate"
+        },
+        "options": {
+          "queryName": "match_documents_4"
+        }
+      },
+      "id": "09dc48d1-eb63-4ea8-932d-f48b8fb45ade",
+      "name": "Insert into Supabase Vectorstore1",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        1860
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        2160
+      ],
+      "id": "959468b6-4d8e-4bb5-a603-85007b1a7beb",
+      "name": "Embeddings Cohere2",
+      "credentials": {
+        "cohereApi": {
+          "id": "WT9y62sST1qWljk5",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6c9ab897-f12e-4565-8eb9-b40b1a098bbb",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "client_company",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1100,
+        1020
+      ],
+      "id": "b885d45e-47e4-4469-b7e4-e0bbac6e27ec",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nlet raw =$input.first().json.output ;\n\n\nraw = raw.replace(/```json\\n|```/g, \"\"); // remove markdown fencing\nconst data = JSON.parse(raw);\nconst contract = data.contracts[0];\n\nreturn [\n  {\n    json: {\n      client_company: contract.client_company,\n      supplier_company: contract.supplier_company,\n      contract_type: contract.contract_type,\n      renewal_terms: contract.renewal_terms,\n      expiration_date: contract.expiration_date\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        1000
+      ],
+      "id": "4d30c13f-983b-4be1-b22b-ae0c41d14af5",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "sendTo": "maramtrabelsi1212@gmail.com",
+        "subject": "contract expiration",
+        "emailType": "text",
+        "message": "=the contract between the clientt company : {{ $json.client_company }} and the supplier {{ $json.supplier_company }} for the {{ $json.contract_type }} will be expiring by this date : {{ $json.expiration_date }}  these are the renewal terms of this contract : {{ $json.renewal_terms }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1160,
+        1220
+      ],
+      "id": "c6170cc2-6828-4c99-98c3-d9453feef999",
+      "name": "Gmail",
+      "webhookId": "0a6b077c-db21-4e2f-8914-7d32bc1045d9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "rwUtD7cUgouXx3vc",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Send a notification in case of contract expiration",
+        "height": 460,
+        "width": 500
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1060,
+        920
+      ],
+      "typeVersion": 1,
+      "id": "35a5e7aa-e6f5-4204-a238-29c0b97c7e36",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM",
+          "mode": "list",
+          "cachedResultName": "Cassify contracts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 52351477,
+          "mode": "list",
+          "cachedResultName": "ALL",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit#gid=52351477"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "societe partenaire": "={{ $json.prestataire }}",
+            "societe client": "={{ $json.client }}",
+            "type of contract": "={{ $json.typeOfContract }}",
+            "contract file id": "={{ $('Switch1').item.json.file_id }}",
+            "contract file name": "={{ $('Switch1').item.json.file_name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "contract file id",
+              "displayName": "contract file id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "contract file name",
+              "displayName": "contract file name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "societe partenaire",
+              "displayName": "societe partenaire",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "societe client",
+              "displayName": "societe client",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "type of contract",
+              "displayName": "type of contract",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2180,
+        300
+      ],
+      "id": "74743b21-4ce4-4f56-a5b2-063233b9f5fa",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM",
+          "mode": "list",
+          "cachedResultName": "Cassify contracts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 606483288,
+          "mode": "list",
+          "cachedResultName": "contract type",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit#gid=606483288"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2680,
+        280
+      ],
+      "id": "25d8bcb6-9ae0-4b7b-a58d-ba9c02917393",
+      "name": "Google Sheets2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM",
+          "mode": "list",
+          "cachedResultName": "Cassify contracts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Google Sheets3').item.json.sheet_id }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "contract file id",
+              "displayName": "contract file id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "contract file name",
+              "displayName": "contract file name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "societe partenaire",
+              "displayName": "societe partenaire",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "societe client",
+              "displayName": "societe client",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "type of contract",
+              "displayName": "type of contract",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3820,
+        460
+      ],
+      "id": "75424fb9-2f75-47b2-8263-f8fa3df282eb",
+      "name": "Google Sheets4",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM",
+          "mode": "list",
+          "cachedResultName": "Cassify contracts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 52351477,
+          "mode": "list",
+          "cachedResultName": "ALL",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit#gid=52351477"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "contract file name",
+              "lookupValue": "={{ $('Google Sheets').item.json['contract file name'] }}"
+            },
+            {
+              "lookupColumn": "type of contract",
+              "lookupValue": "={{ $('Google Sheets').item.json['type of contract'] }}"
+            },
+            {
+              "lookupColumn": "contract file id",
+              "lookupValue": "={{ $('Google Sheets').item.json['contract file id'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3640,
+        460
+      ],
+      "id": "76ffe51f-bac4-4076-8ec3-3c99b30a6408",
+      "name": "Google Sheets5",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## sheets:\nsave contract extracted data into joined database",
+        "width": 200
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2140,
+        180
+      ],
+      "typeVersion": 1,
+      "id": "4709c2ef-23b6-435f-84a1-8e76f8cf6219",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## sheets2\nget contract names already saved",
+        "height": 300,
+        "width": 180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2640,
+        140
+      ],
+      "typeVersion": 1,
+      "id": "4245beaf-442e-480e-a777-e55e13d3b5ea",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## if role doesn't exists in saved roles :\nsave it and create sheet for the new role\n## else save cv data in sheet role",
+        "height": 720,
+        "width": 540
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2880,
+        -60
+      ],
+      "typeVersion": 1,
+      "id": "ff393044-82cb-4a51-a4be-05575152abaf",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Extract values using key variations\nlet typeOfContract = $('Google Sheets').first().json['type of contract']\nlet wordsToRemove = [\"contract\", \"Contract\", \"Supply\",\"Supplies\",\"supply\",\"supplies\",\"Services\",\"services\"];\nlet regex = new RegExp(`\\\\b(${wordsToRemove.join(\"|\")})\\\\b`, \"gi\");\nlet typeOfContract_2 = typeOfContract.replace(regex, \"\").replace(/\\s{2,}/g, ' ').trim();\n\nlet societe_partenaire= $('Google Sheets').first().json['societe partenaire'];\nlet societe_client = $('Google Sheets').first().json['societe client'];\nlet contract_file_id = $('Google Sheets').first().json['contract file id'];\nlet contract_file_name =  $('Google Sheets').first().json['contract file name'];\n\n\nreturn {\n  typeOfContract,\n  typeOfContract_2,\n  societe_partenaire,\n  societe_client,\n  contract_file_id,\n  contract_file_name\n  \n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        280
+      ],
+      "id": "d2c8c296-c80d-40fb-ac0a-1eec36341130",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM",
+          "mode": "list",
+          "cachedResultName": "Cassify contracts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Google Sheets2').item.json.sheet_id }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "contract file id": "={{ $('Code2').item.json.contract_file_id }}",
+            "contract file name": "={{ $('Code2').item.json.contract_file_name }}",
+            "societe partenaire": "={{ $('Code2').item.json.societe_partenaire }}",
+            "societe client": "={{ $('Code2').item.json.societe_client }}",
+            "type of contract": "={{ $('Code2').item.json.typeOfContract }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "contract file id",
+              "displayName": "contract file id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contract file name",
+              "displayName": "contract file name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "societe partenaire",
+              "displayName": "societe partenaire",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "societe client",
+              "displayName": "societe client",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "type of contract",
+              "displayName": "type of contract",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3700,
+        60
+      ],
+      "id": "9e6f1bce-b686-473b-a086-3f7fe2c83633",
+      "name": "Google Sheets6",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data[0].classification }}",
+                    "rightValue": "=true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "9516cfc5-eb75-4c6e-b99e-8ce606b95fa0"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b6aa4be8-ab04-4f9b-b00c-b2138bf0fa09",
+                    "leftValue": "={{ $json.data[0].classification }}",
+                    "rightValue": "=false",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        3460,
+        60
+      ],
+      "id": "267118b1-d642-49b0-9d78-2557f57a5d70",
+      "name": "Switch",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM",
+          "mode": "list",
+          "cachedResultName": "Cassify contracts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 606483288,
+          "mode": "list",
+          "cachedResultName": "contract type",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit#gid=606483288"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "type": "={{ $json.title }}",
+            "sheet_id": "={{ $json.sheetId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sheet_id",
+              "displayName": "sheet_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3780,
+        260
+      ],
+      "id": "bbecc74f-94e2-4e5e-b583-0d0c90ab7ed2",
+      "name": "Google Sheets3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Compare the two strings:\n{{ $('Code2').item.json.typeOfContract_2 }} ( analyzed contract name) and\n{{ $json.type }} (existing contract names).\n\nCheck if the names are similar and share at least one word(case-insensitive, whole words only).\n\nIf yes, return this JSON:\n\n[{\n  \"classification\": \"true\",\n  \"field\": \"{{ $json.type }}\",\n  \"sheet_id\": {{ $json.sheet_id }}\n}]\nIf NO, return this json:\n[{\n  \"classification\": \"False\",\n  \"field\": \"{{ $json.type }}\",\n  \"sheet_id\": {{ $json.sheet_id }}\n}]\ndo not return any explanation or analysis for the result, return just the output in the format requested\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        2920,
+        60
+      ],
+      "id": "542e5990-4c8a-406c-bc87-e2f437388e22",
+      "name": "Basic LLM Chain",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-thinking-exp",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        200
+      ],
+      "id": "917be2d7-dbe2-4b42-aaf4-b9ad89557765",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wlWExbBHelIHUbDo",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the JSON of the item\n\nlet jsonString =$input.item.json.text;\n// Step 1: Remove the extra formatting and trim the string\nlet cleanedJsonString = jsonString.replace(/```json\\n|\\n```/g, \"\").trim();\n\n// Step 2: Parse the cleaned string into a JSON object\nlet data = JSON.parse(cleanedJsonString);\n\n\nreturn {\n  data\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3280,
+        60
+      ],
+      "id": "0aaef529-0d4e-4eb6-b021-b18214f5509d",
+      "name": "Code4",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\n\nfunction haveCommonWord(str1, str2) {\n  const words1 = str1.toLowerCase().match(/\\b\\w+\\b/g) || [];\n  const words2 = new Set((str2.toLowerCase().match(/\\b\\w+\\b/g) || []));\n\n  return words1.some(word => words2.has(word));\n}\n\n// Example usage\nconst string1 =$input.item.json.type ;\nconst string2 = $('Code2').item.json.typeOfContract_2 ;\n\n\n\nreturn {\"word1\":string1,\n       \"word2\":string2,\n       \"result\": haveCommonWord(string1,string2)\n       };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2920,
+        440
+      ],
+      "id": "78a8397c-218c-4e82-ae5d-426da1edf260",
+      "name": "contract name exists"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM",
+          "mode": "list",
+          "cachedResultName": "Cassify contracts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('add new contract name to list').item.json.sheet_id }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "contract file id",
+              "displayName": "contract file id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "contract file name",
+              "displayName": "contract file name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "societe partenaire",
+              "displayName": "societe partenaire",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "societe client",
+              "displayName": "societe client",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "type of contract",
+              "displayName": "type of contract",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3120,
+        900
+      ],
+      "id": "2a2c3865-f5a1-476b-be17-43600d68f078",
+      "name": "Google Sheets8",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## create new sheet with new contract type ",
+        "height": 200,
+        "width": 160
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2640,
+        760
+      ],
+      "typeVersion": 1,
+      "id": "0789316f-8672-411e-bf06-c094b412045d",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM",
+          "mode": "list",
+          "cachedResultName": "Cassify contracts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Google Sheets2').item.json.sheet_id }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "contract file id": "={{ $('Code2').item.json.contract_file_id }}",
+            "contract file name": "={{ $('Code2').item.json.contract_file_name }}",
+            "societe partenaire": "={{ $('Code2').item.json.societe_partenaire }}",
+            "societe client": "={{ $('Code2').item.json.societe_client }}",
+            "type of contract": "={{ $('Code2').item.json.typeOfContract }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "contract file id",
+              "displayName": "contract file id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contract file name",
+              "displayName": "contract file name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "societe partenaire",
+              "displayName": "societe partenaire",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "societe client",
+              "displayName": "societe client",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "type of contract",
+              "displayName": "type of contract",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3280,
+        360
+      ],
+      "id": "171749b0-3fa3-41ed-9ef9-29896aa121cc",
+      "name": "Google Sheets10",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "documentId": {
+          "__rl": true,
+          "value": "1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM",
+          "mode": "list",
+          "cachedResultName": "Cassify contracts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit?usp=drivesdk"
+        },
+        "title": "={{ $('Google Sheets').item.json['type of contract'] }}",
+        "options": {
+          "index": 1
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3640,
+        260
+      ],
+      "id": "8e9a8490-4d3b-4561-9c2a-37e048328d81",
+      "name": "Google Sheets1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "let hasTrue = false;\n\nfor (const item of $input.all()) {\n  if (item.json.result === true) {\n    hasTrue = true;\n    break;\n  }\n}\n\nreturn [\n  {\n    json: {\n      result: hasTrue\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2900,
+        680
+      ],
+      "id": "a85509f7-5277-4887-9467-d8b9f42bb77b",
+      "name": "Code5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0a25600a-b8b5-4fc0-ae58-e78d0ce1bf9d",
+              "leftValue": "={{ $json.result }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3100,
+        440
+      ],
+      "id": "8affeba8-7d0a-4b0d-ac51-363703362329",
+      "name": "If1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5b05c49b-e7e4-4ace-abe1-b036f92f79df",
+              "leftValue": "={{ $json.result }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3100,
+        680
+      ],
+      "id": "61f02a41-ddf5-40ee-99a3-3cb1d6248939",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Extract values using key variations\nlet typeOfContract = $('Google Sheets').first().json['type of contract']\nlet wordsToRemove = [\"contract\", \"Contract\", \"Supply\",\"Supplies\",\"supply\",\"supplies\",\"Services\",\"services\"];\nlet regex = new RegExp(`\\\\b(${wordsToRemove.join(\"|\")})\\\\b`, \"gi\");\nlet typeOfContract_2 = typeOfContract.replace(regex, \"\").replace(/\\s{2,}/g, ' ').trim();\n\nlet societe_partenaire= $('Google Sheets').first().json['societe partenaire'];\nlet societe_client = $('Google Sheets').first().json['societe client'];\nlet contract_file_id = $('Google Sheets').first().json['contract file id'];\nlet contract_file_name =  $('Google Sheets').first().json['contract file name'];\n\n\nreturn {\n  typeOfContract,\n  typeOfContract_2,\n  societe_partenaire,\n  societe_client,\n  contract_file_id,\n  contract_file_name\n  \n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3340,
+        700
+      ],
+      "id": "ad299c8d-b1df-4c77-b011-b667d4f7673f",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "documentId": {
+          "__rl": true,
+          "value": "1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM",
+          "mode": "list",
+          "cachedResultName": "Cassify contracts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit?usp=drivesdk"
+        },
+        "title": "={{ $json.typeOfContract }}",
+        "options": {
+          "index": 1
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3540,
+        700
+      ],
+      "id": "cb6b9b80-3400-4b54-bb97-fbfa3a7a2494",
+      "name": "create new sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM",
+          "mode": "list",
+          "cachedResultName": "Cassify contracts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 606483288,
+          "mode": "list",
+          "cachedResultName": "contract type",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit#gid=606483288"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "type": "={{ $json.title }}",
+            "sheet_id": "={{ $json.sheetId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sheet_id",
+              "displayName": "sheet_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3720,
+        700
+      ],
+      "id": "f543c2e2-23f3-42f1-89ad-f97156abb09f",
+      "name": "add new contract name to list",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM",
+          "mode": "list",
+          "cachedResultName": "Cassify contracts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 52351477,
+          "mode": "list",
+          "cachedResultName": "ALL",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kx4_PwZ46BowWxJI0eElWlMleU4zxgGDYPCUIrNWmtM/edit#gid=52351477"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "contract file name",
+              "lookupValue": "={{ $('Code3').item.json.contract_file_name }}"
+            },
+            {
+              "lookupColumn": "type of contract",
+              "lookupValue": "={{ $('Code3').item.json.typeOfContract }}"
+            },
+            {
+              "lookupColumn": "contract file id",
+              "lookupValue": "={{ $('Code3').item.json.contract_file_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2920,
+        900
+      ],
+      "id": "e93fe23d-5fec-4712-a29e-bec0279e3ed7",
+      "name": "Google Sheets9",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get only the text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request GROQ LLAVA": {
+      "main": [
+        [
+          {
+            "node": "Get only the text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "convert the image file to base64": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request GROQ LLAVA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Created": {
+      "main": [
+        [
+          {
+            "node": "Set File ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Updated": {
+      "main": [
+        [
+          {
+            "node": "Set File ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set File ID": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "convert the image file to base64",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Get only the text2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert into Supabase Vectorstore",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get only the text1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Get only the text2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Documents": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Retrieve Documents",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ],
+      "ai_tool": [
+        []
+      ]
+    },
+    "Embeddings Cohere1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Get only the text1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Retrieve Documents",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Document Text": {
+      "main": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract PDF Text": {
+      "main": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File1": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Created1": {
+      "main": [
+        [
+          {
+            "node": "Set File ID1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Updated1": {
+      "main": [
+        [
+          {
+            "node": "Set File ID1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set File ID1": {
+      "main": [
+        [
+          {
+            "node": "Download File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Extract PDF Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert into Supabase Vectorstore1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Document Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets2": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "contract name exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets5": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets3": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "contract name exists": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets10",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "If2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "create new sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create new sheet": {
+      "main": [
+        [
+          {
+            "node": "add new contract name to list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "add new contract name to list": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets9": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "024366b6-de5e-46ca-8758-cde34cb93499",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eda11f78dc41be1aa2e6362cde9ae6dd4b7bbe5c2c22874197c6fa1fa408e45b"
+  },
+  "id": "TMGB4A8oGODaV3SP",
+  "tags": []
+}
