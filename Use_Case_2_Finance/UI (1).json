@@ -1,0 +1,3293 @@
+{
+  "name": "UI",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.choices[0].message.content }}  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "462faddd-ce2e-4284-9165-5abd5393f025",
+      "name": "Get only the text",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1020,
+        1740
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "id": "f437916d-d733-4941-ad94-31807a976576",
+      "name": "convert the image file to base64",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        680,
+        1740
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.headers[\"content-type\"] }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a26e1ff6-ac77-43e2-8cdf-34d1cd45b43a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "b3d19f78-cc97-4287-9570-85430e65acf4",
+                    "leftValue": "={{ $json.headers[\"content-type\"] }}",
+                    "rightValue": "image/jpeg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "f88aa616-408c-4241-834d-a20015220abc",
+                    "leftValue": "={{ $json.headers[\"content-type\"] }}",
+                    "rightValue": "application/vnd.google-apps.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "291f2639-deb6-4ed6-aea0-09ab9e9c6cd6",
+                    "leftValue": "={{ $json.headers[\"content-type\"] }}",
+                    "rightValue": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": true
+        }
+      },
+      "id": "7c4fea89-e528-4c19-9e77-f879f68bbde4",
+      "name": "Switch1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        460,
+        1760
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        1340,
+        1740
+      ],
+      "id": "1d243bd1-93a0-42ab-9bf2-debc517cc3e1",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro-exp-03-25",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        2000
+      ],
+      "id": "c0ed4dcf-8aa5-48eb-bc24-db879771a0f1",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wlWExbBHelIHUbDo",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nlet jsonString =$input.first().json.output ;\n\n// Step 1: Remove the extra formatting and trim the string\nlet cleanedJsonString = jsonString.replace(/```json\\n|\\n```/g, \"\").trim();\n\n// Step 2: Parse the cleaned string into a JSON object\nlet data = JSON.parse(cleanedJsonString);\n\n// Normalize keys for easier access\nlet normalizedData = {};\nfor (let key in data) {\n  if (data.hasOwnProperty(key)) {\n    let normalizedKey = key.toLowerCase().replace(/[_\\s]+/g, '');\n    normalizedData[normalizedKey] = data[key];\n  }\n}\n\n// Helper to get value by key aliases\nconst getValue = (aliases) => {\n  for (let alias of aliases) {\n    let norm = alias.toLowerCase().replace(/[_\\s]+/g, '');\n    if (normalizedData[norm] !== undefined) {\n      return normalizedData[norm];\n    }\n  }\n  return null;\n};\n\n// Extract values using key variations\nlet typeOfContract = getValue([\"type of contract\", \"type_of_contract\",\"title of the contract\"]);\nlet client = getValue([\"client\", \"Client\"]);\nlet prestataire = getValue([\"prestataire\", \"prestaire\", \"Prestaire\", \"provider\",\"Provider\",\"Prestataire\",\"supplier\",\"Supplier\"]);\nlet termination_terms = getValue([\"termination_terms\"]);\nlet budget = getValue([\"budget\",\"total_contract_value\",\"total\"]);\nlet contract_start_date = getValue([\"contract_start_date\",\"start date\",\"start_date\"]);\nlet contract_expiration_date = getValue([\"contract_expiration_date\",\"expiration date\",\"expiration_date\"]);\nlet notice_days = getValue([\"notice_days\"]);\nreturn {\n  typeOfContract,\n  contract_start_date,\n  contract_expiration_date,\n  client,\n  prestataire,\n  termination_terms,\n  notice_days,\n  budget\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2260,
+        1760
+      ],
+      "id": "3d811ff7-adff-4990-91f4-752d2c600dda",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.data || $json.text || $json.concatenated_data || $json.JSON || $json.choices[0].message.content }}",
+        "options": {}
+      },
+      "id": "e8f88fac-d0e8-4ad9-9a8d-9bb3a42dbf61",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        1880
+      ]
+    },
+    {
+      "parameters": {
+        "separator": "\\n",
+        "chunkOverlap": 100
+      },
+      "id": "d875760e-f1bc-445a-8a0e-0683933ff654",
+      "name": "Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1620,
+        2000
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents_3_duplicate",
+          "mode": "list",
+          "cachedResultName": "documents_3_duplicate"
+        },
+        "options": {
+          "queryName": "match_documents_4"
+        }
+      },
+      "id": "5d035710-9f02-402e-b9fa-bae5dff918d0",
+      "name": "Insert into Supabase Vectorstore",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        1580
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        1980
+      ],
+      "id": "7cf41ecb-a734-4288-a4b5-c91816c93e25",
+      "name": "Embeddings Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "WT9y62sST1qWljk5",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.text ||$json.data }}  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ea2e8fec-b6f2-4b25-92cd-8a2966fd871a",
+      "name": "Get only the text1",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1020,
+        1960
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8f57b7e6-3c00-4f5a-b64d-bbec723d9e9d",
+      "name": "Get only the text2",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1020,
+        1540
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        680,
+        1960
+      ],
+      "id": "1db0ba20-e007-4b3a-b642-680f879516f4",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "content": "## Get Contracts",
+        "height": 380,
+        "width": 1180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1320,
+        780
+      ],
+      "typeVersion": 1,
+      "id": "dabefc21-5c0d-4b17-a7cb-50f0a249f6c1",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "contracts",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "societe client",
+              "condition": "eq",
+              "keyValue": "={{ $json.query['societe client'] || $json.params['societe client'] ||$json.body['societe client']}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        940
+      ],
+      "id": "b429569d-2b40-4d2f-a7a2-620c5c645b21",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -740,
+        940
+      ],
+      "id": "ba186eb6-b5a7-4860-8fac-86861809f96b",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## Get Company names",
+        "height": 380,
+        "width": 1040
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -100,
+        780
+      ],
+      "typeVersion": 1,
+      "id": "746650e5-bf72-4fa0-9784-f761758e50c3",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        380,
+        940
+      ],
+      "id": "370a2af8-448f-4d6c-a443-32a7a1736df3",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "companies",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        160,
+        940
+      ],
+      "id": "0faf5e55-af4b-4041-b1dd-8c2bb55ce6b1",
+      "name": "Supabase1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "database",
+        "description": "Contains all the user's documents that you need to check for context to answer user questions.",
+        "topK": 15
+      },
+      "id": "332aae98-60c4-4028-a9cd-69e9d6d7f14e",
+      "name": "Retrieve Documents",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        1740
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "d6dd0a35-c31d-49c7-a29d-55ea94dbb3b4",
+      "name": "Postgres Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1,
+      "position": [
+        -1000,
+        1820
+      ],
+      "notesInFlow": false,
+      "credentials": {
+        "postgres": {
+          "id": "K7nRP77ni3gmoVVU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a9a245e-f1a1-4282-bb02-a81ffe629f0f",
+              "name": "chatInput",
+              "value": "={{ $json?.chatInput || $json.body.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "b80831d8-c653-4203-8706-adedfdb98f77",
+              "name": "sessionId",
+              "value": "={{ $json?.sessionId || $json.body.sessionId}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c20abd1c-469d-4569-8190-1599f667dc7b",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1260,
+        1560
+      ]
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "id": "558dcfb8-bc70-4cbe-9ed8-ad6007b2f649",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2100,
+        2660
+      ],
+      "webhookId": "f655705b-b8b8-4f13-ac5a-53b5a3b0c05c"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a personal assistant who helps answer questions from a corpus of documents when you don't know the answer yourself."
+        }
+      },
+      "id": "ab2fdab5-9463-4e03-a78a-fad1dcfdfabd",
+      "name": "RAG AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -1040,
+        1560
+      ]
+    },
+    {
+      "parameters": {
+        "tableName": {
+          "__rl": true,
+          "value": "documents_3_duplicate",
+          "mode": "list",
+          "cachedResultName": "documents_3_duplicate"
+        },
+        "options": {
+          "queryName": "match_documents_4"
+        }
+      },
+      "id": "0319e62a-d6cb-4a6e-a039-bcebe8c888b9",
+      "name": "Supabase Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        1940
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        2080
+      ],
+      "id": "5d4f9b0d-e0af-4d6c-905c-43f521b999e4",
+      "name": "Embeddings Cohere1",
+      "credentials": {
+        "cohereApi": {
+          "id": "WT9y62sST1qWljk5",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Retrieval  cohere embed 1024 _  LLAMA 3.3 70B Versatile",
+        "height": 900,
+        "width": 1780,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1700,
+        1440
+      ],
+      "typeVersion": 1,
+      "id": "78fe7aa4-3ba1-44ec-9229-811ac55719fa",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.recipient || $json.query.recipient ||  $json.params.recipient }}",
+        "subject": "={{ $json.body.subject || $json.query.subject || $json.params.subject }}",
+        "message": "= {{ $json.body.contracts ||  $json.query.contracts || $json.params.contracts}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1360,
+        880
+      ],
+      "id": "98189f93-95b2-4a58-936d-1f724689ad91",
+      "name": "Gmail",
+      "webhookId": "77887dd9-12f0-4c97-a551-359af21e14da",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "L3fCXet1U9ABPI2n",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Send a notification in case of contract expiration",
+        "height": 460,
+        "width": 500
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1020,
+        800
+      ],
+      "typeVersion": 1,
+      "id": "15c7f6c2-f050-4494-977a-f6126d3f2281",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -680,
+        1560
+      ],
+      "id": "15932215-80f0-416c-889a-c2e04f3bcb05",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "content": "## Extract text from contract and Classify",
+        "height": 920,
+        "width": 2540,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        120,
+        1420
+      ],
+      "typeVersion": 1,
+      "id": "2d2c61bf-bf73-47f1-bd30-fd4df3fdf22e",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2360,
+        2020
+      ],
+      "id": "5a27fdcb-5a4b-4259-950a-d7974b965251",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "tableId": "contracts",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "type of contract",
+              "fieldValue": "={{ $json.typeOfContract }}"
+            },
+            {
+              "fieldId": "societe client",
+              "fieldValue": "={{ $json.client.name || $json.client }}"
+            },
+            {
+              "fieldId": "societe partenaire",
+              "fieldValue": "={{ $json.prestataire.name  || $json.prestataire }}"
+            },
+            {
+              "fieldId": "contract_expiration_date",
+              "fieldValue": "={{ $json.contract_expiration_date }}"
+            },
+            {
+              "fieldId": "contract_start_date",
+              "fieldValue": "={{ $json.contract_start_date }}"
+            },
+            {
+              "fieldId": "termination_terms",
+              "fieldValue": "={{ $json.termination_terms }}"
+            },
+            {
+              "fieldId": "contract file name",
+              "fieldValue": "={{ $json.contract_title || $json.typeOfContract}}"
+            },
+            {
+              "fieldId": "notice_days",
+              "fieldValue": "={{ $json.notice_days}}"
+            },
+            {
+              "fieldId": "budget",
+              "fieldValue": "={{ $json.budget}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2440,
+        1760
+      ],
+      "id": "3d2da3eb-b850-4428-accc-8ff81b24eef1",
+      "name": "Supabase2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1160,
+        1080
+      ],
+      "id": "20cb9aa0-0ec7-4bbc-9997-828ba67ba8f0",
+      "name": "Respond to Webhook4"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {
+          "binaryPropertyName": "data",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Disposition",
+                "value": "attachment"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        180,
+        1760
+      ],
+      "id": "bcefc543-5f76-4e5c-a2d0-75753ac625be",
+      "name": "upload",
+      "webhookId": "c98778ca-4f6a-42da-bc58-a65b7c708d3e",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SpssZvkAo1cJm26b",
+          "name": "Header Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "invoke_agent0",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1520,
+        1760
+      ],
+      "id": "5b2ab204-3e8f-4131-90de-ab664b1e9163",
+      "name": "chat",
+      "webhookId": "486d7424-21cd-4bf4-aeec-5681f413f71b",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "m73f8YubUdcKyRtE",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "contracts",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1180,
+        940
+      ],
+      "id": "dfe3b68c-5965-4f9f-9d2b-3ae6fa0a03fd",
+      "name": "get_contracts",
+      "webhookId": "bca2130b-5a6d-420e-b6b6-e5da235437a2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SpssZvkAo1cJm26b",
+          "name": "Header Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "get_companies",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        940
+      ],
+      "id": "ea1de29c-ff58-492b-8f77-cd3393bff634",
+      "name": "get_companies",
+      "webhookId": "bfac3d4a-272d-4548-ac71-e12bd9dd3c35",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SpssZvkAo1cJm26b",
+          "name": "Header Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "notify_expiring",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        880
+      ],
+      "id": "66d2f563-2bd3-4f12-8398-a102206b98aa",
+      "name": "notification",
+      "webhookId": "eeef10ce-8fc3-4ba4-ae71-a496ff3220d9",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SpssZvkAo1cJm26b",
+          "name": "Header Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"extract the text within the image, i want the output to only include the extracted text\"\n        },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"data:image/jpeg;base64,{{ $json.data }}\"\n          }\n        }\n      ]\n    }\n  ],\n  \"model\": \"meta-llama/llama-4-scout-17b-16e-instruct\"\n}",
+        "options": {}
+      },
+      "id": "4cb7a127-93db-4ef9-b3aa-a2a0ef8f6fc8",
+      "name": "HTTP Request GROQ LLAMA4-scout-17b-16e-instruct",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        880,
+        1740
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        680,
+        1560
+      ],
+      "id": "0216c886-eb06-49d0-b438-1321a5d0eb43",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Read the following contract text: {{$json.choices[0].message.content}}\n\nYour tasks are:\n\nClassify the contract by identifying the type of supply contract it is based on the service or product it provides (e.g., \"hardware supply contract\", \"cleaning supply contract\", etc.).\n\nExtract the following key details from the contract:\n\n\"type_of_contract\": The classified category (e.g., hardware supply contract).\n\n\"termination_terms\": The terms and conditions under which the contract can be terminated.\n\n\"contract_title\": The official title of the contract.\n\n\"start_date\": The effective date when the contract begins (check the \"Contract Duration\" section).\n\n\"expiration_date\": The end date or validity period of the contract (check the \"Contract Duration\" section).\n\n\"notice_days\": the number of days mentioned in the termination terms of the contract for the client.\n\n\"client\": The party receiving the goods or services, the client.\n\n\"provider\": The party supplying the goods or services, the provider of the service.\n\n\"budget\" : The expenses of the contract, the total of the contract value, extracted from the pricing and payment terms.\n\nReturn the extracted information only in the following JSON format:\n\n{\n  \"type_of_contract\": \"\",\n  \"termination_terms\": \"\",\n  \"notice_days\":\"\",\n  \"contract_title\": \"\",\n  \"start_date\": \"\",\n  \"expiration_date\": \"\",\n  \"client\": \"\",\n  \"provider\": \"\",\n  \"budget\": \"\"\n}\nBe precise, and do not include any additional commentary or text outside of the JSON.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1920,
+        1760
+      ],
+      "id": "7496c4f3-9f27-4fbd-a9cd-c52da4b1c048",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "content": "## Code\nRead the following contract text: {{$json.choices[0].message.content}}\n\nYour tasks are:\n\nClassify the contract by identifying the type of supply contract it is based on the service or product it provides (e.g., \"hardware supply contract\", \"cleaning supply contract\", etc.).\n\nExtract the following key details from the contract:\n\n\"type_of_contract\": The classified category (e.g., hardware supply contract).\n\n\"termination_terms\": The terms and conditions under which the contract can be terminated.\n\n\"contract_title\": The official title of the contract.\n\n\"start_date\": The effective date when the contract begins (check the \"Contract Duration\" section).\n\n\"expiration_date\": The end date or validity period of the contract (check the \"Contract Duration\" section).\n\n\"client\": The party receiving the goods or services, the client.\n\n\"provider\": The party supplying the goods or services, the provider of the service.\n\nReturn the extracted information only in the following JSON format:\n\n{\n  \"type_of_contract\": \"\",\n  \"termination_terms\": \"\",\n  \"contract_title\": \"\",\n  \"start_date\": \"\",\n  \"expiration_date\": \"\",\n  \"client\": \"\",\n  \"provider\": \"\"\n}\nBe precise, and do not include any additional commentary or text outside of the JSON."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2400,
+        1440
+      ],
+      "typeVersion": 1,
+      "id": "f7512d04-090f-4a49-9397-d7ead569518a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Generation d'appel d'offre\n",
+        "height": 620,
+        "width": 900
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1620,
+        700
+      ],
+      "typeVersion": 1,
+      "id": "572525ff-4bd7-4941-a056-99fc5c93619a",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1720,
+        900
+      ],
+      "id": "d6b88d11-e566-47d6-9e49-98d315e8380e",
+      "name": "Webhook",
+      "webhookId": "dc3effe4-b646-42e1-8b9f-09186295f025",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SpssZvkAo1cJm26b",
+          "name": "Header Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2220,
+        1120
+      ],
+      "id": "118af40d-8261-41b6-9cb4-4a85ddb75567",
+      "name": "Respond to Webhook5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=please generate a professional Call for Proposals (CFP) document with real information that I can send to qualified {{ $json.query['contract_type'] || $json.params['contract_type'] || $json.body['contract_type'] }}/service providers.\n\nThe CFP should include:\n\nIntroduction of the client company  {{ $json.query['client_name'] || $json.params['client_name'] || $json.body['client_name'] }} \nthe purpose of the request\n\nDetailed scope of required services\n\nEligibility criteria for applicants\n\nInstructions on what the proposal must contain\n\nSubmission guidelines (format, deadline, where to send it)\n\nEvaluation criteria (in tabular form if possible)\n\nContract details (start date, duration, locations, Proposal deadline )\n\nLegal disclaimer\n\nUse a formal, clear tone. \nrefer to this {{ $json.query['text_content']|| $json.params['text_content'] || $json.body['text_content'] }} for the document data generation.\nStructure the document professionally and fill it with real data so I can use it to launch a real call for proposals to companies operating in Tunisia or abroad. The target providers are experienced {{ $json.query['contract_type']|| $json.params['contract_type'] || $json.body['contract_type'] }} companies.\n\nreturn only the CFP document. output in HTML format.\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        1880,
+        900
+      ],
+      "id": "0951c1e5-381b-4255-b051-c90dbf91f17f",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro-exp-03-25",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        760
+      ],
+      "id": "31009ffe-7e3f-4369-a9ed-7f5a821a7194",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wlWExbBHelIHUbDo",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Call For supply Proposals CFP",
+        "message": "=\n\n{{ $('Basic LLM Chain').item.json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1700,
+        1120
+      ],
+      "id": "bfa891e5-b883-4a65-a756-03737378dd48",
+      "name": "Gmail1",
+      "webhookId": "64db5b9d-27c7-4c43-a45a-c5119af96d02",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "L3fCXet1U9ABPI2n",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "fournisseur",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2220,
+        900
+      ],
+      "id": "090e81b6-d7cd-41ed-a9b8-1515ad836a46",
+      "name": "Supabase3",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Enrechir liste fournisseur\n\n",
+        "height": 520,
+        "width": 1000
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2580,
+        800
+      ],
+      "typeVersion": 1,
+      "id": "bf2e7848-4761-41ed-a19b-9839ba5d1b59",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        2780,
+        940
+      ],
+      "id": "e85d9278-0a5d-4aeb-9a1a-85d930ecd108",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=search through the internet in tunisia for supply companies in different fields.  extract their name and email and phone number.\noutput format json:\nonly the name,email and phone with no oher text\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        3000,
+        940
+      ],
+      "id": "2d30fc82-f4f7-4d78-9d50-39bcef121edc",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-pro-exp",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        3040,
+        780
+      ],
+      "id": "1f644fd1-7698-4d30-af9c-8117416e0f64",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wlWExbBHelIHUbDo",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "fournisseur",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $json.data.name }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $json.data.email }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $json.data.phone }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3080,
+        1160
+      ],
+      "id": "1595a735-fcd6-44ca-b3aa-43d6dd09ff4e",
+      "name": "Supabase4",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## analyze proposals",
+        "height": 900,
+        "width": 2540
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2720,
+        1420
+      ],
+      "typeVersion": 1,
+      "id": "1805b105-1d26-4e06-b470-303550dda7f0",
+      "name": "Sticky Note7",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "let jsonString =$input.first().json.text ;\n// Step 1: Remove the extra formatting and trim the string\nlet cleanedJsonString = jsonString.replace(/```json\\n|\\n```/g, \"\").trim();\n// Step 2: Parse the cleaned string into a JSON object\nlet data = JSON.parse(cleanedJsonString);\n\n\nreturn {data}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3360,
+        940
+      ],
+      "id": "270d706e-a4e4-48fb-94da-1ccc0ef15b79",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2760,
+        1160
+      ],
+      "id": "206cf732-3b8f-4ac1-aa6e-c861070251c4",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.choices[0].message.content }}  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "13310c16-36fd-411c-a5bc-16b3e30b930b",
+      "name": "Get only the text3",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        3760,
+        1720
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "id": "b8a7fdee-a7ae-41c6-b955-9d273db85623",
+      "name": "convert the image file to base",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        3240,
+        1720
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $binary.attachment_0.mimeType }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a26e1ff6-ac77-43e2-8cdf-34d1cd45b43a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "b3d19f78-cc97-4287-9570-85430e65acf4",
+                    "leftValue": "= {{ $binary.attachment_0.mimeType }}",
+                    "rightValue": "application/jpeg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "f88aa616-408c-4241-834d-a20015220abc",
+                    "leftValue": "= {{ $binary.attachment_0.mimeType }}",
+                    "rightValue": "application/vnd.google-apps.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": true
+        }
+      },
+      "id": "c257467e-c14c-413c-8d0b-d4258aa4f230",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        3040,
+        1720
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.text ||$json.data }}  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "513251c2-7c99-4c4f-8c41-314d08e1b174",
+      "name": "Get only the text4",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        3760,
+        1940
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eb0b627b-acaf-4036-aad5-22a3e7eb2051",
+      "name": "Get only the text5",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        3760,
+        1520
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        3240,
+        1940
+      ],
+      "id": "ca639dc1-ec16-4bd1-890d-a73c75d15a51",
+      "name": "Extract from File2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"extract the text within the image, i want the output to only include the extracted text\"\n        },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"data:image/jpeg;base64,{{ $json.data }}\"\n          }\n        }\n      ]\n    }\n  ],\n  \"model\": \"meta-llama/llama-4-scout-17b-16e-instruct\"\n}",
+        "options": {}
+      },
+      "id": "b97961c3-ef90-4943-92a5-8ef1a36269eb",
+      "name": "HTTP Request GROQ LLAMA4-scout-17b-16e-instruct1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3440,
+        1720
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        3240,
+        1540
+      ],
+      "id": "6158f801-6e86-4e8a-aa35-06c807966a4b",
+      "name": "Extract from File3"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "q": "has:attachment"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        2840,
+        1720
+      ],
+      "id": "8dafdafb-920d-4f7c-ad52-9ff6166fa333",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "8XZ1WtflnEiSl4bc",
+          "name": "Gmail account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "proposals",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "contract_content",
+              "fieldValue": "={{ $json.choices[0].message.content }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4400,
+        1720
+      ],
+      "id": "a93260f6-7ea2-4d0c-8e88-c9ace65ca2d5",
+      "name": "Supabase5",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "synthese",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        4700,
+        1960
+      ],
+      "id": "fba39244-655a-4b11-87ed-6bb91bc2787d",
+      "name": "Webhook1",
+      "webhookId": "25ffa9b1-6375-43af-b88a-8535bbda698f",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SpssZvkAo1cJm26b",
+          "name": "Header Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        4220,
+        1720
+      ],
+      "id": "2e4f767c-9cb5-47d7-8aa3-f57009ed8cb0",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Read the following contract text: \n{{ $json.contract_content }}\nYour tasks are:\n\n1 - Classify the contract by identifying the type of supply contract it is based on the service or product it provides (e.g., \"hardware supply contract\", \"cleaning supply contract\", etc.).\n2- extract the provider/supplier name\n3- extract the provider/supplier information\n\n\noutput only the result in json format:\n{\"contract_type\":\"\",\n  \"supplier_name\":\"\",\n  \"supplier_info\":\"\"}",
+        "hasOutputParser": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        4620,
+        1720
+      ],
+      "id": "aa542726-17b8-4384-ac9c-ff0342afd7a4",
+      "name": "Basic LLM Chain3"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-pro-exp",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        4620,
+        1540
+      ],
+      "id": "6102dd4a-1501-42f3-bdd3-b7c3aca976ac",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wlWExbBHelIHUbDo",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "proposals",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Supabase5').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "type",
+              "fieldValue": "={{ $json.output.contract_type }}"
+            },
+            {
+              "fieldId": "supplier_name",
+              "fieldValue": "={{ $json.output.supplier_name }}"
+            },
+            {
+              "fieldId": "supplier_info",
+              "fieldValue": "={{ $json.output.supplier_info }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4980,
+        1720
+      ],
+      "id": "9bb70614-1ae4-4200-9289-068da019e36c",
+      "name": "Supabase7",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-docx-converter.docxToText",
+      "typeVersion": 1,
+      "position": [
+        680,
+        2140
+      ],
+      "id": "678fe855-9245-4c07-bc09-a016d7c89f89",
+      "name": "DOCX to Text"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.text ||$json.data }}  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d3d7d9c3-107a-412e-a2a9-eb755017a04d",
+      "name": "Get only the text6",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1020,
+        2120
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "name": "database",
+        "description": "Contains all the user's documents that you need to check for context to answer user questions.",
+        "topK": 15
+      },
+      "id": "13df376c-36d9-4cc8-98cb-bece27df31c6",
+      "name": "Retrieve Documents1",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        -1380,
+        2700
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "9acdb938-ac55-4a0d-a1a5-b6e003086322",
+      "name": "Postgres Chat Memory1",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1,
+      "position": [
+        -1560,
+        2780
+      ],
+      "notesInFlow": false,
+      "credentials": {
+        "postgres": {
+          "id": "K7nRP77ni3gmoVVU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a9a245e-f1a1-4282-bb02-a81ffe629f0f",
+              "name": "chatInput",
+              "value": "={{ $json?.chatInput || $json.body.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "b80831d8-c653-4203-8706-adedfdb98f77",
+              "name": "sessionId",
+              "value": "={{ $json?.sessionId || $json.body.sessionId}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2decf8c8-5855-450e-b95f-e1ef3053ea20",
+      "name": "Edit Fields2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1820,
+        2520
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a personal assistant who helps answer questions from a corpus of documents when you don't know the answer yourself."
+        }
+      },
+      "id": "ca8588b4-3573-42d2-9f45-48f568b42c82",
+      "name": "RAG AI Agent1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -1600,
+        2520
+      ]
+    },
+    {
+      "parameters": {
+        "tableName": {
+          "__rl": true,
+          "value": "documents_3_duplicate",
+          "mode": "list",
+          "cachedResultName": "documents_3_duplicate"
+        },
+        "options": {
+          "queryName": "match_documents_4"
+        }
+      },
+      "id": "6f7b1331-472d-4ea9-b1ac-4d8fe28f2e4d",
+      "name": "Supabase Vector Store1",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        -1500,
+        2900
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        -1580,
+        3080
+      ],
+      "id": "fff63b98-c621-4568-aa98-e1b4d542cf51",
+      "name": "Embeddings Cohere2",
+      "credentials": {
+        "cohereApi": {
+          "id": "WT9y62sST1qWljk5",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Retrieval  cohere embed 1024 / OPENAI GPT 4.1\n",
+        "height": 820,
+        "width": 1780,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2260,
+        2400
+      ],
+      "typeVersion": 1,
+      "id": "81486736-8bf4-41e9-8581-80665cb51faf",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -1240,
+        2520
+      ],
+      "id": "b5ab5089-c8fd-4454-80fe-b34a259bb83e",
+      "name": "Respond to Webhook6"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "invoke_agent",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2080,
+        2520
+      ],
+      "id": "baa24d3e-b0c8-4ee4-b9f6-245d99a129db",
+      "name": "chat1",
+      "webhookId": "486d7424-21cd-4bf4-aeec-5681f413f71b",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "m73f8YubUdcKyRtE",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1680,
+        2720
+      ],
+      "id": "53ceb97c-3a3f-485e-a405-d1dc02ed90f6",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1160,
+        2880
+      ],
+      "id": "d9e8706d-2c2d-4efe-a537-e285e93ada43",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=2"
+      },
+      "id": "d2f65367-49dd-4bee-8a8b-a8bdb2aa3a4c",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        5020,
+        2340
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "analyze all incoming contract proposals from suppliers stored in the \"proposals\" Supabase table, group them by contract_type, summarize their content, and generate a comparative HTML summary to help users choose the best contract.\nsend the generated output / html summary through gmail tool.",
+        "options": {
+          "systemMessage": "=SYSTEM\nYou are ContractCompare AI — an expert contract analyst focused on helping businesses evaluate and compare multiple supplier proposals. Your job is to analyze all incoming contract proposals from suppliers stored in the \"proposals\" Supabase table, group them by contract_type, summarize their content, and generate a comparative HTML summary to help users choose the best contract.\nLastly, Send the generated output / html summary through the gmail tool.\n\nTOOLS\n* GetProposalsByType(contract_type: string)\n→ Returns: [{ id, supplier_name, contract_type, contract_content }]\n→ Retrieves all proposals of the given contract type.\n\n* SendEmail\n→ Parameters: { to: string, subject: string, html_body: string }\n→ Sends an HTML email with the comparison summary.\n\nRULES\n\n* Call GetProposalsByType and retrieve proposals grouped by type contract_type.\n\n* For each contract retrieved:\n\n1 - Extract and summarize key clauses:\n\nBudget\n\nDuration\n\nPayment terms\n\nDelivery terms\n\nTermination conditions\n\nJurisdiction\n\nAny unique clauses or risks\n\n* Generate a clean, structured HTML table summarizing all contracts for that contract_type.\n\n* call SendEmail and send the HTML summary.\n\n*  Maintain a formal and concise tone.\n\nWORKFLOW\n\n1- Call GetProposalsByType  -> call contracts of the same type.\n\n2- Loop through each contract  → Extract key terms using reasoning.\n\n3- Format a side-by-side HTML summary for user review.\n\n4- Call SendEmail -> send the ouput/ Summary in Html format through gmail.",
+          "returnIntermediateSteps": true
+        }
+      },
+      "id": "5f0da8f8-6659-4efe-999a-4afed88cf40d",
+      "name": "Support Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        4920,
+        1960
+      ],
+      "retryOnFail": true,
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {
+          "maxTokens": 1024,
+          "temperature": 0.3
+        }
+      },
+      "id": "588f1a72-08f6-4fa6-8783-d336943a81b4",
+      "name": "OpenAI Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        4860,
+        2180
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "proposals"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        5120,
+        2160
+      ],
+      "id": "bb49f141-1e38-40e5-89e1-c2688b0acd46",
+      "name": "Get_proposals",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"contract_type\":\"\",\n  \"supplier_name\":\"\",\n  \"supplier_info\":\"\"}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        4780,
+        1560
+      ],
+      "id": "7d5b55d7-d815-4f6c-b7a7-ac2b5fedefbd",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "sendTo": "maramtrabelsi1212@gmail.com",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        5260,
+        2140
+      ],
+      "id": "193715d5-249a-4fd3-95d6-77627d86b205",
+      "name": "SendEmail",
+      "webhookId": "06d0619c-9c1e-4651-8449-0ec3a1aed4c0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "8XZ1WtflnEiSl4bc",
+          "name": "Gmail account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## You are a legal analyst AI tasked with evaluating multiple contracts.\nYou will receive several full-length contract texts.\nYour goal is to analyze and compare them based on the following criteria:\n\nClarity and completeness of terms\n\nFairness and balance between parties\n\nDuration and termination conditions\n\nObligations and responsibilities of each party\n\nPricing, payment terms, and penalties\n\nFlexibility and scalability of the agreement\n\nRisk exposure and liability clauses\n\nCompliance with legal standards\n\nProvide a structured evaluation of each contract, scoring each criterion from 1 (poor) to 10 (excellent).\nThen, summarize which contract is the most favorable overall and explain why.\nReturn your answer in a table format followed by a final recommendation.\noutput format : html\n\n\n\ncontracts to analyze : \ncontract number : {{ $json.id }}\ncontract content :{{ $json.contract_content }}"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4300,
+        1960
+      ],
+      "typeVersion": 1,
+      "id": "c1812a32-31a9-48ec-b3fd-c710a2702287",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 520,
+        "width": 1180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4260,
+        1940
+      ],
+      "typeVersion": 1,
+      "id": "0d2d9122-ebea-41d6-a59e-d0e609732ec8",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Comment:\n### excellent retrieval and Question/Answer results\n## Fast\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -780,
+        2440
+      ],
+      "typeVersion": 1,
+      "id": "3198f4d2-0cce-45a4-aec4-f751d15ede9f",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "name": "database",
+        "description": "Contains all the user's documents that you need to check for context to answer user questions.",
+        "topK": 15
+      },
+      "id": "514e3821-97cd-4599-aeb8-619e4d5e01ca",
+      "name": "Retrieve Documents2",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        460,
+        2700
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "d79ffc95-c99b-4786-aa13-fddb3c4a8f97",
+      "name": "Postgres Chat Memory2",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1,
+      "position": [
+        280,
+        2780
+      ],
+      "notesInFlow": false,
+      "credentials": {
+        "postgres": {
+          "id": "K7nRP77ni3gmoVVU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a9a245e-f1a1-4282-bb02-a81ffe629f0f",
+              "name": "chatInput",
+              "value": "={{ $json?.chatInput || $json.body.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "b80831d8-c653-4203-8706-adedfdb98f77",
+              "name": "sessionId",
+              "value": "={{ $json?.sessionId || $json.body.sessionId}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ab9cbfb8-415a-416a-a0dd-1a69fa0e45dd",
+      "name": "Edit Fields3",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        20,
+        2520
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a personal assistant who helps answer questions from a corpus of documents when you don't know the answer yourself."
+        }
+      },
+      "id": "7e08b6f8-f808-464a-aa65-8952dbe5734c",
+      "name": "RAG AI Agent2",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        240,
+        2520
+      ]
+    },
+    {
+      "parameters": {
+        "tableName": {
+          "__rl": true,
+          "value": "documents_3_duplicate",
+          "mode": "list",
+          "cachedResultName": "documents_3_duplicate"
+        },
+        "options": {
+          "queryName": "match_documents_4"
+        }
+      },
+      "id": "50cf8f58-3d50-47ef-ba3e-2d7cbffa6bef",
+      "name": "Supabase Vector Store2",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        340,
+        2900
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        260,
+        3080
+      ],
+      "id": "51c3dd5c-4209-4e13-9a37-d2aa8eca944d",
+      "name": "Embeddings Cohere3",
+      "credentials": {
+        "cohereApi": {
+          "id": "WT9y62sST1qWljk5",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Retrieval  cohere embed 1024 / ",
+        "height": 880,
+        "width": 1620,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -420,
+        2400
+      ],
+      "typeVersion": 1,
+      "id": "64beb512-e478-4a6a-a2d6-e4fa2e023e41",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        600,
+        2520
+      ],
+      "id": "5d759cd0-8833-405f-b4fc-f4cfc96a3877",
+      "name": "Respond to Webhook7"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "invoke_agent1",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        2520
+      ],
+      "id": "66676e69-a508-449f-b94d-159f83d3e686",
+      "name": "chat2",
+      "webhookId": "486d7424-21cd-4bf4-aeec-5681f413f71b",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "m73f8YubUdcKyRtE",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Comment:\n### good retrieval but takes too long to answer questions\n##  on tokens per day (TPD): Limit 100000"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -220,
+        1540
+      ],
+      "typeVersion": 1,
+      "id": "6680d8e2-b788-4108-8441-af7dadd7891d",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -1160,
+        1820
+      ],
+      "id": "95e4a09e-9584-4d4b-aad3-509dcf522d6c",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "hJ8t1ayITxjcfox7",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -540,
+        1900
+      ],
+      "id": "acc98fac-0524-4734-b52a-05ed9e85bbed",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "hJ8t1ayITxjcfox7",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Comment  \n### good at retrieval but not good at reasoning "
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        940,
+        2560
+      ],
+      "typeVersion": 1,
+      "id": "aafde6ff-0ad0-4ba7-97f7-670ff3af0430",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        600,
+        2920
+      ],
+      "id": "032dd3ff-f269-4cfc-ab48-d3a255ea8f4d",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wlWExbBHelIHUbDo",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-pro-exp",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        160,
+        2740
+      ],
+      "id": "5fa0524d-62cf-458f-8efa-5692a8078f7e",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wlWExbBHelIHUbDo",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get only the text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "convert the image file to base64": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request GROQ LLAMA4-scout-17b-16e-instruct",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "convert the image file to base64",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DOCX to Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get only the text1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Get only the text2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Get only the text1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Documents": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Retrieve Documents",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Supabase2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "upload": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "chat": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_contracts": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_companies": {
+      "main": [
+        [
+          {
+            "node": "Supabase1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "notification": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request GROQ LLAMA4-scout-17b-16e-instruct": {
+      "main": [
+        [
+          {
+            "node": "Get only the text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Get only the text2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Supabase3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase3": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Supabase4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get only the text3": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "convert the image file to base": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request GROQ LLAMA4-scout-17b-16e-instruct1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Extract from File3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "convert the image file to base",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get only the text4": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Get only the text5": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File2": {
+      "main": [
+        [
+          {
+            "node": "Get only the text4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request GROQ LLAMA4-scout-17b-16e-instruct1": {
+      "main": [
+        [
+          {
+            "node": "Get only the text3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File3": {
+      "main": [
+        [
+          {
+            "node": "Get only the text5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase5": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Support Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Supabase5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain3": {
+      "main": [
+        [
+          {
+            "node": "Supabase7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOCX to Text": {
+      "main": [
+        [
+          {
+            "node": "Get only the text6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get only the text6": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Retrieve Documents1": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "RAG AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "RAG AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Retrieve Documents1",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "chat1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RAG AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Retrieve Documents1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Support Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Support Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_proposals": {
+      "ai_tool": [
+        [
+          {
+            "node": "Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendEmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Documents2": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "RAG AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "RAG AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store2": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Retrieve Documents2",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere3": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "chat2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Retrieve Documents",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Retrieve Documents2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RAG AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "61ef9213-facb-4a6b-b763-ffbf3cee15d7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eda11f78dc41be1aa2e6362cde9ae6dd4b7bbe5c2c22874197c6fa1fa408e45b"
+  },
+  "id": "gMswfQjtKASE88SI",
+  "tags": []
+}
