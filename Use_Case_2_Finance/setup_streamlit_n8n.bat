@@ -1,14 +1,14 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal enabledelayedexpansion enableextensions
 
 :: Streamlit & n8n Automated Setup Script for Windows
-:: This batch script sets up Streamlit and n8n on Windows 10+ systems
+:: This batch script automatically installs and sets up Streamlit and n8n on Windows 10/11
 
 :: Show header
 echo ==========================================================
 echo 🚀 Streamlit ^& n8n Automated Setup Script for Windows
-echo 🔧 Running in current directory mode
-echo 🔶 Using local n8n installation (npm) instead of Docker
+echo 🔧 Running in current directory mode 
+echo 🔶 Automatic package installation enabled
 echo ==========================================================
 
 :: Check if running as administrator
@@ -44,13 +44,29 @@ if %errorLevel% == 0 (
 
 :: Python not found
 echo ❌ Python not found.
-set /p installChoice="📥 Would you like to install Python now? (y/n): "
+set /p installChoice="📥 Would you like to install Python 3.10 automatically? (y/n): "
 if /i "!installChoice!"=="y" (
-    echo 📥 Opening Python download page...
-    start https://www.python.org/downloads/
-    echo ℹ️ Please install Python 3.9-3.11 and make sure to check 'Add Python to PATH'
-    echo ℹ️ After installation, please restart this script.
-    exit /b
+    echo 📥 Downloading Python 3.10 installer...
+    curl -L -o python310.exe https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe
+    
+    echo 📥 Installing Python 3.10...
+    echo ℹ️ Running installer with PATH and pip options enabled...
+    start /wait python310.exe /quiet InstallAllUsers=1 PrependPath=1 Include_pip=1 Include_test=0
+    
+    echo ⏳ Waiting for installation to complete...
+    timeout /t 5 /nobreak > nul
+    
+    :: Verify installation
+    where python >nul 2>&1
+    if %errorLevel% == 0 (
+        set pythonCommand=python
+        echo ✅ Python installed successfully! Continuing with setup...
+        goto :pythonFound
+    ) else (
+        echo ⚠️ Python installation completed, but Python is not in PATH.
+        echo ⚠️ Please restart your computer to update PATH and run this script again.
+        exit /b
+    )
 ) else (
     echo ❌ Python is required to continue. Exiting script.
     exit /b 1
@@ -489,8 +505,7 @@ if not "!workflowJson!"=="" if exist "!workflowJson!" (
     echo ℹ️ Select the file: !workflowJson!
 )
 
-:: Create a comprehensive start script
-echo 📝 Creating comprehensive start script...
+:: Modify start_apps.bat to handle npx if needed
 (
     echo @echo off
     echo REM Script to start both Streamlit and n8n in the current project directory
@@ -517,7 +532,13 @@ echo 📝 Creating comprehensive start script...
     echo.
     echo REM Start n8n in a new window
     echo echo 🚀 Starting n8n...
-    echo start "n8n" cmd /c "n8n start"
+    echo where n8n >nul 2^>^&1
+    echo if %%ERRORLEVEL%% EQU 0 (
+    echo     start "n8n" cmd /c "n8n start"
+    echo ^) else (
+    echo     echo ℹ️ Using npx to start n8n...
+    echo     start "n8n" cmd /c "npx n8n start"
+    echo ^)
     echo echo ✅ n8n started in a new window
     echo echo ℹ️ n8n will be available at http://localhost:5678
     echo.
