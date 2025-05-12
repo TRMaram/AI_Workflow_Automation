@@ -108,7 +108,7 @@ if (-not (Test-CommandExists node)) {
     Write-Host "Node.js not found. Installing latest version..." -ForegroundColor Magenta
     
     # Download Node.js installer
-    $nodeUrl = "https://nodejs.org/dist/latest/node-v20.11.1-x64.msi"
+    $nodeUrl = "https://nodejs.org/dist/v20.12.2/node-v20.12.2-x64.msi"
     $nodeInstaller = Join-Path $tempDir "node_installer.msi"
     
     try {
