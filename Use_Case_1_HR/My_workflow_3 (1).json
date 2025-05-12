@@ -1,0 +1,1404 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {
+          "dataPropertyAttachmentsPrefixName": "attachment_",
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -3400,
+        240
+      ],
+      "id": "e5701c07-ff4d-4764-a379-3e196141aab6",
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5ba9ae0b-ce92-4fcc-b046-fb9df9c9258f",
+              "leftValue": "={{$('Gmail Trigger').item.binary}}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -3180,
+        100
+      ],
+      "id": "4675fb9b-3da1-49a0-baad-9f9048986abb",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ $json.attachements }}",
+        "name": "=File_{{$json.attachements}}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1L7AlVoIR-k7Kul4ahPuD_qFzCfZ-zqSO",
+          "mode": "list",
+          "cachedResultName": "FILE",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1L7AlVoIR-k7Kul4ahPuD_qFzCfZ-zqSO"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2300,
+        160
+      ],
+      "id": "201e278f-ac35-4640-9855-781dc673db26",
+      "name": "Google Drive"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aafbdcaa-4147-4762-8984-b7c5e613d25f",
+              "name": "attachements",
+              "value": "={{ $('Gmail Trigger').item.binary.keys() }}",
+              "type": "array"
+            },
+            {
+              "id": "fa350ae4-6fda-46a8-b31a-7d1bc4c5ff64",
+              "name": "attachement_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2960,
+        100
+      ],
+      "id": "56384f3f-ef56-48ac-896b-fd28575c0dac",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "attachements",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -2740,
+        100
+      ],
+      "id": "9337c020-f27d-4a4f-a145-974574045502",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "attachement_id",
+              "field2": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -2520,
+        160
+      ],
+      "id": "ce373404-1532-473e-a6b1-65d610a365d1",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2080,
+        160
+      ],
+      "id": "d810e1f6-b76b-43cc-8986-69c665eda6a6",
+      "name": "Google Drive1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.mimeType}}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "94703044-c5cf-434a-882c-a28214a49879"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pdf_files"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9a14c75a-93ca-4aeb-ab6d-dc6e74e18728",
+                    "leftValue": "={{$json.mimeType}}",
+                    "rightValue": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "docs"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1860,
+        160
+      ],
+      "id": "c91ccdab-8bbc-4797-bfb0-37d6bedea3b7",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1640,
+        80
+      ],
+      "id": "55ff9e17-726c-4553-9bcc-d789379597bb",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-pro-002",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        480
+      ],
+      "id": "4fa15201-85c6-4b00-a5f4-a3ef590b2829",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -1420,
+        260
+      ],
+      "id": "e0edf29d-b36b-45f3-9ba4-6d242a071bca",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7Mwboaedaf4k4Q9C",
+          "mode": "list",
+          "cachedResultName": "My workflow 2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -1720,
+        480
+      ],
+      "id": "41b87073-d06f-43ec-b67c-c16c680eae84",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=I have two types of documents to analyze\nCompany Description Document:{{ $json.data[1].text }} This document contains details about the company, including the field of specialization, the job roles they are hiring for, and other relevant information.\nCandidate CV: {{ $json.data[0].text }}This contains the candidate's job title, skill, work experience, and the industries they have worked in.\nTask:\nAnalyze the company description document to identify the field of work (e.g., Telecommunication, IT, Finance, etc.) and the job roles required which are the classification classes. Then, compare this information with the candidate's CV to determine the most appropriate classification for the candidate based on:\n\nTheir primary job role.\nTheir experience and alignment with the required roles.\nTheir alignment with the company's field of specialization.\nOutput Format:\nProvide the results in this JSON format with the following structure:\n\n   \n  {\n    \"name\": \"Ahmed Ben Ali\",\n    \"email\": \"ahmed.benali@email.com\",\n    \"phone\": \"+216 50 555 555\",\n    \"linkedin\": \"linkedin.com/in/ahmedbenali\",\n    \"role\": \"Project Management Officer\",\n    \"skills\": [\n      \"Strong project management and coordination skills\",\n      \"Excellent communication and stakeholder management abilities\",\n      \"Proficient in Microsoft Project\",\n      \"Proficient in Jira\",\n      \"Proficient in MS Office\",\n      \"Ability to manage multiple projects simultaneously and meet deadlines\",\n      \"Knowledgeable in change management processes\",\n      \"Knowledgeable in project lifecycle management\"\n    ],\n    \"experience_years\": 3,\n    \"classification_field\": \"Finance\",\n    \"matching_company\": \"Zitouna Bank\"\n  }\n\nIf a candidate does not fit into any provided field of classification, set \"classification_field\" to \"Unclassified\" and \"matching_company\" to null. Ensure the classifications are accurate and consistent based on the details in the documents.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a helpful assistant that is excellent at data analysis and data extraction and classification of information."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        -980,
+        260
+      ],
+      "id": "170f81a8-d47a-4b27-a908-a7728e9a5a1f",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "include": "specifiedFields",
+        "fieldsToInclude": "info.Title, text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        260
+      ],
+      "id": "9cfda9e3-0b3e-432b-b71a-845f2a7f4e70",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk",
+          "mode": "list",
+          "cachedResultName": "hr_general",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.output.name }}",
+            "role": "={{ $json.output.role }}",
+            "skills": "={{ $json.output.skills }}",
+            "experience_years": "={{ $json.output.experience_years }}",
+            "classification_field": "={{ $json.output.classification_field }}",
+            "matching_company": "={{ $json.output.matching_company }}",
+            "email": "={{ $json.output.email }}",
+            "phone": "={{ $json.output.phone }}",
+            "linkedin": "={{ $json.output.linkedin }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "linkedin",
+              "displayName": "linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "experience_years",
+              "displayName": "experience_years",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "skills",
+              "displayName": "skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "matching_company",
+              "displayName": "matching_company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "classification_field",
+              "displayName": "classification_field",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -600,
+        260
+      ],
+      "id": "865da4ca-5102-42f2-8429-20270bd705f0",
+      "name": "Google Sheets"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk",
+          "mode": "list",
+          "cachedResultName": "hr_general",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1617620423,
+          "mode": "list",
+          "cachedResultName": "role",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit#gid=1617620423"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -380,
+        260
+      ],
+      "id": "f8028e50-de35-4536-99f8-36a7f184405f",
+      "name": "Google Sheets2"
+    },
+    {
+      "parameters": {
+        "batchSize": "=100",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -160,
+        260
+      ],
+      "id": "d461049b-9613-4406-93b0-d7d82182c0f7",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "881c6a7a-b627-4aec-a3fc-3653b5817eda",
+              "leftValue": "={{ $json.role1 }}",
+              "rightValue": "={{ $('Google Sheets').item.json.role }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        280
+      ],
+      "id": "41da72e3-7c17-4c90-b142-2994ca0f6eb5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk",
+          "mode": "list",
+          "cachedResultName": "hr_general",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1617620423,
+          "mode": "list",
+          "cachedResultName": "role",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit#gid=1617620423"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "role1": "={{ $('Google Sheets').item.json.role }}"
+          },
+          "matchingColumns": [
+            "role1"
+          ],
+          "schema": [
+            {
+              "id": "role1",
+              "displayName": "role1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        280,
+        140
+      ],
+      "id": "c545e7c6-8414-47fa-a91c-585e1eb8370e",
+      "name": "Google Sheets3"
+    },
+    {
+      "parameters": {
+        "content": "## LLM Chain :\n classify cv based on field and company document added by user"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1280,
+        440
+      ],
+      "typeVersion": 1,
+      "id": "8fce2467-32c9-486a-ac45-3af15e85380c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \n    \"name\": \"Maria Gonzalez\",\n    \"email\": \"maria.gonzalez@email.com\",\n    \"phone\": \"+216 22 555 555\",\n    \"linkedin\": \"linkedin.com/in/mariagonzalez\",\n    \"role\": \"Strategic Marketing Consultant\",\n    \"skills\": [\n      \"Strategic marketing planning and execution\",\n      \"Market research and competitor analysis\",\n      \"Strong communication and presentation skills\",\n      \"Proficient in marketing tools (Google Analytics, SEMrush, HubSpot)\",\n      \"Excellent problem-solving and analytical abilities\"\n    ],\n    \"experience_years\": 4,\n    \"classification_field\": \"Finance\",\n    \"matching_company\": \"Sofrecom\"\n  }\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -840,
+        480
+      ],
+      "id": "c1e54c9e-af6f-4563-864b-ec6d22160f7d",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "content": "## sheets:\nsave cv extracted data into joined database"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -700,
+        160
+      ],
+      "typeVersion": 1,
+      "id": "24abf788-4c7d-4efa-ba2a-ad1100c47974",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## sheets2\nget roles already saved",
+        "height": 300,
+        "width": 200
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -440,
+        120
+      ],
+      "typeVersion": 1,
+      "id": "753947c5-a0c3-4c5a-a702-eb9bf2e2b97f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## if role doesn't exists in saved roles :\nsave it and create sheet for the new role\n## else save cv data in sheet role",
+        "height": 420,
+        "width": 300
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -80,
+        -60
+      ],
+      "typeVersion": 1,
+      "id": "3e6286a4-38c6-41ab-9a54-7f524a734474",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "documentId": {
+          "__rl": true,
+          "value": "1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk",
+          "mode": "list",
+          "cachedResultName": "hr_general",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit?usp=drivesdk"
+        },
+        "title": "={{ $json.role1 }}",
+        "options": {
+          "index": 1
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        500,
+        140
+      ],
+      "id": "3b48e179-479f-413a-b10b-418c70090c94",
+      "name": "Google Sheets1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "content": "## save new role",
+        "width": 160
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        260,
+        20
+      ],
+      "typeVersion": 1,
+      "id": "8bc99444-4413-4528-9a35-45ea9514024a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## create new sheet with new role",
+        "width": 160
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        460,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "4eefda7b-7c9c-4dec-afc9-412a7a2d8670",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk",
+          "mode": "list",
+          "cachedResultName": "hr_general",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Google Sheets').item.json.role }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "linkedin",
+              "displayName": "linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "experience_years",
+              "displayName": "experience_years",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "skills",
+              "displayName": "skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "matching_company",
+              "displayName": "matching_company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "classification_field",
+              "displayName": "classification_field",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "RAW",
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        960,
+        140
+      ],
+      "id": "d16cf818-52d3-4362-9294-6d68130dc67e",
+      "name": "Google Sheets4"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk",
+          "mode": "list",
+          "cachedResultName": "hr_general",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "name",
+              "lookupValue": "={{ $('Google Sheets').item.json.name }}"
+            },
+            {
+              "lookupColumn": "role",
+              "lookupValue": "={{ $('Google Sheets').item.json.role }}"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        720,
+        140
+      ],
+      "id": "5ddb1607-3024-4064-92bd-47919747c37c",
+      "name": "Google Sheets5",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk",
+          "mode": "list",
+          "cachedResultName": "hr_general",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Google Sheets').item.json.role }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "linkedin",
+              "displayName": "linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "experience_years",
+              "displayName": "experience_years",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "skills",
+              "displayName": "skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "matching_company",
+              "displayName": "matching_company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "classification_field",
+              "displayName": "classification_field",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "RAW",
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        140,
+        560
+      ],
+      "id": "9b594992-5c09-457d-a4c8-1183f483e338",
+      "name": "Google Sheets6",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk",
+          "mode": "list",
+          "cachedResultName": "hr_general",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQF36abkwQKhwVLNUzyeTnM4viA-kxXxdy_5IEZDoUk/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "name",
+              "lookupValue": "={{ $('Google Sheets').item.json.name }}"
+            },
+            {
+              "lookupColumn": "role",
+              "lookupValue": "={{ $('Google Sheets').item.json.role }}"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -100,
+        560
+      ],
+      "id": "8b88b754-c3c7-4252-86b9-b1852c13d667",
+      "name": "Google Sheets7",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-docx-converter.docxToText",
+      "typeVersion": 1,
+      "position": [
+        -1640,
+        260
+      ],
+      "id": "f3c2989a-ddd1-4d0a-8499-26937e878582",
+      "name": "DOCX to Text"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DOCX to Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets3": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets5": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets7": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOCX to Text": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fd0c10e9-ea20-4f89-af6b-2e2383fc0124",
+  "meta": {
+    "instanceId": "eda11f78dc41be1aa2e6362cde9ae6dd4b7bbe5c2c22874197c6fa1fa408e45b"
+  },
+  "id": "XSPK5QwaRGEUqRwf",
+  "tags": []
+}

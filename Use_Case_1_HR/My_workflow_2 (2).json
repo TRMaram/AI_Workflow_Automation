@@ -1,0 +1,1943 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {
+          "dataPropertyAttachmentsPrefixName": "attachment_",
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2360,
+        600
+      ],
+      "id": "30b59059-f93a-4b8b-84ce-80ed6ce1ea5f",
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5ba9ae0b-ce92-4fcc-b046-fb9df9c9258f",
+              "leftValue": "={{$('Gmail Trigger').item.binary}}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -2120,
+        340
+      ],
+      "id": "38c8e5a6-96bc-493f-b126-82662e2e86a5",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ $json.attachements }}",
+        "name": "=File_{{$json.attachements}}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1L7AlVoIR-k7Kul4ahPuD_qFzCfZ-zqSO",
+          "mode": "list",
+          "cachedResultName": "FILE",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1L7AlVoIR-k7Kul4ahPuD_qFzCfZ-zqSO"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1400,
+        520
+      ],
+      "id": "3163ce04-a270-444a-9a59-50e3d8f175a0",
+      "name": "Google Drive"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aafbdcaa-4147-4762-8984-b7c5e613d25f",
+              "name": "attachements",
+              "value": "={{ $('Gmail Trigger').item.binary.keys() }}",
+              "type": "array"
+            },
+            {
+              "id": "fa350ae4-6fda-46a8-b31a-7d1bc4c5ff64",
+              "name": "attachement_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1960,
+        340
+      ],
+      "id": "1614ebb9-f1f5-41b6-88a7-0a46ae9c6c0f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "attachements",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1800,
+        340
+      ],
+      "id": "ddd144af-52a3-4665-aa79-18f61e3ea806",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "attachement_id",
+              "field2": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -1600,
+        520
+      ],
+      "id": "583f9516-608b-4ddf-8a93-2f938c8bb075",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1220,
+        520
+      ],
+      "id": "c24962c5-5798-4f57-92e5-108762a1f5f1",
+      "name": "Google Drive1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.mimeType}}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "94703044-c5cf-434a-882c-a28214a49879"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pdf_files"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9a14c75a-93ca-4aeb-ab6d-dc6e74e18728",
+                    "leftValue": "={{$json.mimeType}}",
+                    "rightValue": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "docs"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1020,
+        520
+      ],
+      "id": "111f473d-f0be-4fde-9157-30e908ea95d6",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        380
+      ],
+      "id": "dd074336-a043-41ef-b020-28c63be66149",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "= You are an expert in data extraction and categorization. Analyze the attached CV data {{ $json.text }}  and extract the relevant information in JSON format using the following headers: Name Phone Email LinkedIn Skills Match Experience (Extract the full experience section) Years of Experience (Please calculate the total years of professional experience based on the provided work history in the CV. For each job listed, consider the start and end dates, or if the job is ongoing, calculate the experience as of the current date. Provide the exact number of the total years of experience across all positions listed.) Education Relevant Projects/Achievements Overall Assessment Additional Notes Department Categorization Explanation for Categorization Categorization: Categorize the CV into one of these departments: Project Manager Software Engineering Software Quality Assurance SW Architect IT Support DevOps Other Ensure the categorization is accurate and provide a concise explanation for the chosen department. If the attached file cannot be read or processed, or if any field is unavailable or unextractable, use the following JSON format: { \"Name\": \"None\", \"Phone\": \"None\", \"Email\": \"None\", \"LinkedIn\": \"None\", \"Skills Match\": \"None\", \"Experience\": \"None\", \"Years of Experience\": \"None\", \"Education\": \"None\", \"Relevant Projects/Achievements\": \"None\", \"Overall Assessment\": \"None\", \"Additional Notes\": \"None\", \"Department Categorization\": \"Other\", \"Explanation for Categorization\": \"File could not be read or processed.\" } Only provide the JSON output.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": " You are an expert in data extraction and categorization. Analyze the attached CV data  and extract the relevant information in JSON format using the following headers: Name Phone Email LinkedIn Skills Match Experience (Extract the full experience section) Years of Experience (Please calculate the total years of professional experience based on the provided work history in the CV. For each job listed, consider the start and end dates, or if the job is ongoing, calculate the experience as of the current date. Provide the exact number of the total years of experience across all positions listed.) Education Relevant Projects/Achievements Overall Assessment Additional Notes Department Categorization Explanation for Categorization Categorization: Categorize the CV into one of these departments: Project Manager Software Engineering Software Quality Assurance SW Architect IT Support DevOps Other Ensure the categorization is accurate and provide a concise explanation for the chosen department. If the attached file cannot be read or processed, or if any field is unavailable or unextractable, use the following JSON format: { \"Name\": \"None\", \"Phone\": \"None\", \"Email\": \"None\", \"LinkedIn\": \"None\", \"Skills Match\": \"None\", \"Experience\": \"None\", \"Years of Experience\": \"None\", \"Education\": \"None\", \"Relevant Projects/Achievements\": \"None\", \"Overall Assessment\": \"None\", \"Additional Notes\": \"None\", \"Department Categorization\": \"Other\", \"Explanation for Categorization\": \"File could not be read or processed.\" } Only provide the JSON output."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        -360,
+        420
+      ],
+      "id": "a8669c66-8576-4210-b0a8-2664014b6785",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -340,
+        780
+      ],
+      "id": "3909129e-6f11-446d-8ed8-d6b9e8d10b5f",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{ \"Name\": \"None\", \"Phone\": \"None\", \"Email\": \"None\", \"LinkedIn\": \"None\", \"Skills Match\": \"None\", \"Experience\": \"None\", \"Years of Experience\": \"None\", \"Education\": \"None\", \"Relevant Projects/Achievements\": \"None\", \"Overall Assessment\": \"None\", \"Additional Notes\": \"None\", \"Department Categorization\": \"Other\", \"Explanation for Categorization\": \"File could not be read or processed.\" } "
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -200,
+        640
+      ],
+      "id": "9b98f657-6ab3-4005-ba73-f9f0c40e00be",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output['Department Categorization'] }}",
+                    "rightValue": "IT Support",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6e06f8c4-4bfe-4833-9318-55b718eb9f7b"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4825c76a-57c6-40ee-9bb9-a16a1b661f5b",
+                    "leftValue": "={{ $json.output['Department Categorization'] }}",
+                    "rightValue": "Other",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3786f607-0df0-451f-bfdd-792d983cdf4b",
+                    "leftValue": "={{ $json.output['Department Categorization'] }}",
+                    "rightValue": "Software Engineering",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e0d43fed-2ebd-4070-875c-6378dcaea88a",
+                    "leftValue": "={{ $json.output['Department Categorization'] }}",
+                    "rightValue": "SW Architect",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "990c7bb1-cc04-4949-8c76-4e9ae97c65de",
+                    "leftValue": "={{ $json.output['Department Categorization'] }}",
+                    "rightValue": "Software Quality Assurance",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3c08d3db-add6-4b48-8278-6d27da8058fc",
+                    "leftValue": "={{ $json.output['Department Categorization'] }}",
+                    "rightValue": "Project Manager",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e4ab00d6-ece4-420c-b25e-7c9e7af4fd42",
+                    "leftValue": "={{ $json.output['Department Categorization'] }}",
+                    "rightValue": "Devops",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        0,
+        420
+      ],
+      "id": "26278ef0-1972-49ee-be36-38932aaabed7",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs",
+          "mode": "list",
+          "cachedResultName": "Copie de HR_CV_test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1832601208,
+          "mode": "list",
+          "cachedResultName": "Other",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit#gid=1832601208"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.output.Name }}",
+            "Phone": "={{ $json.output.Phone }}",
+            "Email": "={{ $json.output.Email }}",
+            "LinkedIn": "={{ $json.output.LinkedIn }}",
+            "Skills Match": "={{ $json.output['Skills Match'] }}",
+            "Experience": "={{ $json.output.Experience }}",
+            "Years of Experience": "={{ $json.output['Years of Experience'] }}",
+            "Education": "={{ $json.output.Education }}",
+            "Relevant Projects/Achievements": "={{ $json.output['Relevant Projects/Achievements'] }}",
+            "Overall Assessment": "={{ $json.output['Overall Assessment'] }}",
+            "Additional Notes": "={{ $json.output['Additional Notes'] }}",
+            "Department Categorization": "={{ $json.output['Department Categorization'] }}",
+            "Explanation for Categorization": "={{ $json.output['Explanation for Categorization'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills Match",
+              "displayName": "Skills Match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Years of Experience",
+              "displayName": "Years of Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Experience",
+              "displayName": "Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Education",
+              "displayName": "Education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Relevant Projects/Achievements",
+              "displayName": "Relevant Projects/Achievements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Overall Assessment",
+              "displayName": "Overall Assessment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Additional Notes",
+              "displayName": "Additional Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Department Categorization",
+              "displayName": "Department Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Explanation for Categorization",
+              "displayName": "Explanation for Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        240,
+        80
+      ],
+      "id": "3504b54e-ab6a-46d0-84a5-96e65de5ec7d",
+      "name": "Google Sheets1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs",
+          "mode": "list",
+          "cachedResultName": "Copie de HR_CV_test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Software Engineering",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.output.Name }}",
+            "Phone": "={{ $json.output.Phone }}",
+            "Email": "={{ $json.output.Email }}",
+            "LinkedIn": "={{ $json.output.LinkedIn }}",
+            "Skills Match": "={{ $json.output['Skills Match'] }}",
+            "Experience": "={{ $json.output.Experience }}",
+            "Education": "={{ $json.output.Education }}",
+            "Years of Experience": "={{ $json.output['Years of Experience'] }}",
+            "Relevant Projects/Achievements": "={{ $json.output['Relevant Projects/Achievements'] }}",
+            "Overall Assessment": "={{ $json.output['Overall Assessment'] }}",
+            "Additional Notes": "={{ $json.output['Additional Notes'] }}",
+            "Department Categorization": "={{ $json.output['Department Categorization'] }}",
+            "Explanation for Categorization": "={{ $json.output['Explanation for Categorization'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Years of Experience",
+              "displayName": "Years of Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills Match",
+              "displayName": "Skills Match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Experience",
+              "displayName": "Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Education",
+              "displayName": "Education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Relevant Projects/Achievements",
+              "displayName": "Relevant Projects/Achievements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Overall Assessment",
+              "displayName": "Overall Assessment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Additional Notes",
+              "displayName": "Additional Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Department Categorization",
+              "displayName": "Department Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Explanation for Categorization",
+              "displayName": "Explanation for Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        300,
+        240
+      ],
+      "id": "a053bb65-6a99-419e-92f4-1164656b9413",
+      "name": "Google Sheets2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs",
+          "mode": "list",
+          "cachedResultName": "Copie de HR_CV_test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1332989679,
+          "mode": "list",
+          "cachedResultName": "SW Architect",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit#gid=1332989679"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.output.Name }}",
+            "Phone": "={{ $json.output.Phone }}",
+            "Email": "={{ $json.output.Email }}",
+            "LinkedIn": "={{ $json.output.LinkedIn }}",
+            "Skills Match": "={{ $json.output['Skills Match'] }}",
+            "Experience": "={{ $json.output.Experience }}",
+            "Education": "={{ $json.output.Education }}",
+            "Years of Experience": "={{ $json.output['Years of Experience'] }}",
+            "Relevant Projects/Achievements": "={{ $json.output['Relevant Projects/Achievements'] }}",
+            "Overall Assessment": "={{ $json.output['Overall Assessment'] }}",
+            "Additional Notes": "={{ $json.output['Additional Notes'] }}",
+            "Department Categorization": "={{ $json.output['Department Categorization'] }}",
+            "Explanation for Categorization": "={{ $json.output['Explanation for Categorization'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Years of Experience",
+              "displayName": "Years of Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills Match",
+              "displayName": "Skills Match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Experience",
+              "displayName": "Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Education",
+              "displayName": "Education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Relevant Projects/Achievements",
+              "displayName": "Relevant Projects/Achievements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Overall Assessment",
+              "displayName": "Overall Assessment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Additional Notes",
+              "displayName": "Additional Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Department Categorization",
+              "displayName": "Department Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Explanation for Categorization",
+              "displayName": "Explanation for Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        240,
+        420
+      ],
+      "id": "111aacbd-5d0e-4df3-b077-ade8fa31a729",
+      "name": "Google Sheets3"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs",
+          "mode": "list",
+          "cachedResultName": "Copie de HR_CV_test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2057701953,
+          "mode": "list",
+          "cachedResultName": "Software Quality Assurance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit#gid=2057701953"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.output.Name }}",
+            "Phone": "={{ $json.output.Phone }}",
+            "Email": "={{ $json.output.Email }}",
+            "LinkedIn": "={{ $json.output.LinkedIn }}",
+            "Skills Match": "={{ $json.output['Skills Match'] }}",
+            "Experience": "={{ $json.output.Experience }}",
+            "Education": "={{ $json.output.Education }}",
+            "Years of Experience": "={{ $json.output['Years of Experience'] }}",
+            "Relevant Projects/Achievements": "={{ $json.output['Relevant Projects/Achievements'] }}",
+            "Overall Assessment": "={{ $json.output['Overall Assessment'] }}",
+            "Additional Notes": "={{ $json.output['Additional Notes'] }}",
+            "Department Categorization": "={{ $json.output['Department Categorization'] }}",
+            "Explanation for Categorization": "={{ $json.output['Explanation for Categorization'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Years of Experience",
+              "displayName": "Years of Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills Match",
+              "displayName": "Skills Match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Experience",
+              "displayName": "Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Education",
+              "displayName": "Education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Relevant Projects/Achievements",
+              "displayName": "Relevant Projects/Achievements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Overall Assessment",
+              "displayName": "Overall Assessment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Additional Notes",
+              "displayName": "Additional Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Department Categorization",
+              "displayName": "Department Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Explanation for Categorization",
+              "displayName": "Explanation for Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        380,
+        580
+      ],
+      "id": "9e198bec-a01f-41e5-9938-458d5734ba03",
+      "name": "Google Sheets4"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs",
+          "mode": "list",
+          "cachedResultName": "Copie de HR_CV_test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 916385781,
+          "mode": "list",
+          "cachedResultName": "Project Manager",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit#gid=916385781"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.output.Name }}",
+            "Phone": "={{ $json.output.Phone }}",
+            "Email": "={{ $json.output.Email }}",
+            "LinkedIn": "={{ $json.output.LinkedIn }}",
+            "Skills Match": "={{ $json.output['Skills Match'] }}",
+            "Experience": "={{ $json.output.Experience }}",
+            "Education": "={{ $json.output.Education }}",
+            "Years of Experience": "={{ $json.output['Years of Experience'] }}",
+            "Relevant Projects/Achievements": "={{ $json.output['Relevant Projects/Achievements'] }}",
+            "Overall Assessment": "={{ $json.output['Overall Assessment'] }}",
+            "Additional Notes": "={{ $json.output['Additional Notes'] }}",
+            "Department Categorization": "={{ $json.output['Department Categorization'] }}",
+            "Explanation for Categorization": "={{ $json.output['Explanation for Categorization'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Years of Experience",
+              "displayName": "Years of Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills Match",
+              "displayName": "Skills Match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Experience",
+              "displayName": "Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Education",
+              "displayName": "Education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Relevant Projects/Achievements",
+              "displayName": "Relevant Projects/Achievements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Overall Assessment",
+              "displayName": "Overall Assessment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Additional Notes",
+              "displayName": "Additional Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Department Categorization",
+              "displayName": "Department Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Explanation for Categorization",
+              "displayName": "Explanation for Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        680
+      ],
+      "id": "5b4d7552-5201-4007-8841-d468f2f15840",
+      "name": "Google Sheets5"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs",
+          "mode": "list",
+          "cachedResultName": "Copie de HR_CV_test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1543265853,
+          "mode": "list",
+          "cachedResultName": "DEVOPS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit#gid=1543265853"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.output.Name }}",
+            "Phone": "={{ $json.output.Phone }}",
+            "Email": "={{ $json.output.Email }}",
+            "LinkedIn": "={{ $json.output.LinkedIn }}",
+            "Skills Match": "={{ $json.output['Skills Match'] }}",
+            "Experience": "={{ $json.output.Experience }}",
+            "Education": "={{ $json.output.Education }}",
+            "Years of Experience": "={{ $json.output['Years of Experience'] }}",
+            "Relevant Projects/Achievements": "={{ $json.output['Relevant Projects/Achievements'] }}",
+            "Overall Assessment": "={{ $json.output['Overall Assessment'] }}",
+            "Additional Notes": "={{ $json.output['Additional Notes'] }}",
+            "Department Categorization": "={{ $json.output['Department Categorization'] }}",
+            "Explanation for Categorization": "={{ $json.output['Explanation for Categorization'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Years of Experience",
+              "displayName": "Years of Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills Match",
+              "displayName": "Skills Match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Experience",
+              "displayName": "Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Education",
+              "displayName": "Education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Relevant Projects/Achievements",
+              "displayName": "Relevant Projects/Achievements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Overall Assessment",
+              "displayName": "Overall Assessment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Additional Notes",
+              "displayName": "Additional Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Department Categorization",
+              "displayName": "Department Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Explanation for Categorization",
+              "displayName": "Explanation for Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        200,
+        840
+      ],
+      "id": "38ad9ece-da30-44b9-9050-e2d1ecc83303",
+      "name": "Google Sheets6"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs",
+          "mode": "list",
+          "cachedResultName": "Copie de HR_CV_test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1762891916,
+          "mode": "list",
+          "cachedResultName": "IT Support",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IQ_mALD3EtNenZ8lYT7usJeB2lOrxRnnA6hXwLOMtMs/edit#gid=1762891916"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.output.Name }}",
+            "Phone": "={{ $json.output.Phone }}",
+            "Email": "={{ $json.output.Email }}",
+            "LinkedIn": "={{ $json.output.LinkedIn }}",
+            "Skills Match": "={{ $json.output['Skills Match'] }}",
+            "Experience": "={{ $json.output.Experience }}",
+            "Years of Experience": "={{ $json.output['Years of Experience'] }}",
+            "Education": "={{ $json.output.Education }}",
+            "Relevant Projects/Achievements": "={{ $json.output['Relevant Projects/Achievements'] }}",
+            "Overall Assessment": "={{ $json.output['Overall Assessment'] }}",
+            "Additional Notes": "={{ $json.output['Additional Notes'] }}",
+            "Department Categorization": "={{ $json.output['Department Categorization'] }}",
+            "Explanation for Categorization": "={{ $json.output['Explanation for Categorization'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills Match",
+              "displayName": "Skills Match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Years of Experience",
+              "displayName": "Years of Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Experience",
+              "displayName": "Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Education",
+              "displayName": "Education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Relevant Projects/Achievements",
+              "displayName": "Relevant Projects/Achievements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Overall Assessment",
+              "displayName": "Overall Assessment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Additional Notes",
+              "displayName": "Additional Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Department Categorization",
+              "displayName": "Department Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Explanation for Categorization",
+              "displayName": "Explanation for Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        140,
+        -60
+      ],
+      "id": "8510ad10-0171-4771-8e58-de5b6a4055b8",
+      "name": "Google Sheets7",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OPwqxfLWscJF7Zfa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -580,
+        420
+      ],
+      "id": "dd747e65-13c1-4c41-b2c7-f643fa906d21",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-docx-converter.docxToText",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        620
+      ],
+      "id": "293e590b-faaa-4c26-b6b2-dd10e91fd93c",
+      "name": "DOCX to Text"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DOCX to Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOCX to Text": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d92e5bd5-fd3b-41a4-8958-72dfcf5349d3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eda11f78dc41be1aa2e6362cde9ae6dd4b7bbe5c2c22874197c6fa1fa408e45b"
+  },
+  "id": "6J5oGZC0K6h3XJ9G",
+  "tags": []
+}
