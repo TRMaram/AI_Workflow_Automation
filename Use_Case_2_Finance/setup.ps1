@@ -1,650 +1,353 @@
-# PowerShell Script for Streamlit & n8n Setup on Windows
-# This script sets up Streamlit and n8n on Windows 10+ systems
-# Run this script with admin privileges for best results
+# AI Workflow Automation Setup Script
+# This script sets up the environment for AI Workflow Automation
 
-# Show header
-Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "🚀 Streamlit & n8n Automated Setup Script for Windows" -ForegroundColor Cyan
-Write-Host "🔧 Running in current directory mode" -ForegroundColor Cyan
-Write-Host "🔶 Using local n8n installation (npm) instead of Docker" -ForegroundColor Cyan
-Write-Host "==========================================================" -ForegroundColor Cyan
+# Set UTF-8 as the output encoding
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # Function to check if a command exists
 function Test-CommandExists {
     param (
         [string]$Command
     )
-    
-    try {
-        if (Get-Command $Command -ErrorAction Stop) {
-            return $true
-        }
-    }
-    catch {
-        return $false
-    }
-    return $false
+    return [bool](Get-Command -Name $Command -ErrorAction SilentlyContinue)
 }
 
-# Function to check if a port is in use
-function Test-PortInUse {
-    param (
-        [int]$Port
-    )
-    
-    $inUse = $false
-    $connections = Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -eq $Port }
-    
-    if ($connections) {
-        $inUse = $true
-    }
-    
-    return $inUse
-}
-
-# Function to prompt user and install if needed
-function Check-AndInstall {
+# Function to install a required tool
+function Install-RequiredTool {
     param (
         [string]$Tool,
-        [string]$InstallCmd,
-        [string]$CheckCmd = $Tool
+        [string]$InstallCommand,
+        [string]$CheckCommand
     )
     
-    Write-Host "📋 Checking if $Tool is installed..." -ForegroundColor Yellow
-    if (Test-CommandExists $CheckCmd) {
-        Write-Host "✅ $Tool is already installed." -ForegroundColor Green
-        return $true
-    }
-    else {
-        Write-Host "❌ $Tool is not installed." -ForegroundColor Red
-        $installChoice = Read-Host "📥 Would you like to install $Tool now? (y/n)"
-        if ($installChoice -eq "y" -or $installChoice -eq "Y") {
-            Write-Host "📦 Installing $Tool..." -ForegroundColor Yellow
-            try {
-                Invoke-Expression $InstallCmd
-                
-                # Verify installation succeeded
-                if (Test-CommandExists $CheckCmd) {
-                    Write-Host "✅ $Tool was successfully installed." -ForegroundColor Green
-                    return $true
-                }
-                else {
-                    Write-Host "❌ $Tool installation failed. Please install manually and run this script again." -ForegroundColor Red
-                    return $false
-                }
-            }
-            catch {
-                Write-Host "❌ Error installing $Tool: $_" -ForegroundColor Red
+    if (-not (Test-CommandExists $CheckCommand)) {
+        Write-Host "Installing $Tool..." -ForegroundColor Yellow
+        try {
+            Invoke-Expression $InstallCommand
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "✅ $Tool installed successfully" -ForegroundColor Green
+            } else {
+                Write-Host "❌ Error installing $Tool" -ForegroundColor Red
                 return $false
             }
-        }
-        else {
-            Write-Host "⚠️ $Tool is required to continue. Exiting script." -ForegroundColor Red
+        } catch {
+            Write-Host "❌ Error installing $Tool: $_" -ForegroundColor Red
             return $false
         }
+    } else {
+        Write-Host "✅ $Tool is already installed" -ForegroundColor Green
+    }
+    return $true
+}
+
+# Create a directory for the project if it doesn't exist
+$projectDir = Join-Path $PSScriptRoot "finance_automation"
+if (-not (Test-Path $projectDir)) {
+    New-Item -ItemType Directory -Path $projectDir | Out-Null
+    Write-Host "✅ Created project directory: $projectDir" -ForegroundColor Green
+} else {
+    Write-Host "✅ Project directory already exists: $projectDir" -ForegroundColor Green
+}
+
+# Check for required tools
+$requiredTools = @(
+    @{
+        Name = "Git"
+        InstallCommand = 'winget install --id Git.Git -e --source winget'
+        CheckCommand = "git"
+    },
+    @{
+        Name = "Node.js"
+        InstallCommand = 'winget install --id OpenJS.NodeJS -e --source winget'
+        CheckCommand = "node"
+    },
+    @{
+        Name = "Docker Desktop"
+        InstallCommand = 'winget install --id Docker.DockerDesktop -e --source winget'
+        CheckCommand = "docker"
+    }
+)
+
+$allToolsInstalled = $true
+
+foreach ($tool in $requiredTools) {
+    if (-not (Test-CommandExists $tool.CheckCommand)) {
+        Write-Host "$($tool.Name) is not installed." -ForegroundColor Yellow
+        $installChoice = Read-Host "Do you want to install $($tool.Name)? (y/n)"
+        
+        if ($installChoice -eq "y" -or $installChoice -eq "Y") {
+            $success = Install-RequiredTool -Tool $tool.Name -InstallCommand $tool.InstallCommand -CheckCommand $tool.CheckCommand
+            if (-not $success) {
+                $allToolsInstalled = $false
+            }
+        } else {
+            Write-Host "⚠️ $($tool.Name) is required but will not be installed. Setup may fail." -ForegroundColor Red
+            $allToolsInstalled = $false
+        }
+    } else {
+        Write-Host "✅ $($tool.Name) is already installed" -ForegroundColor Green
     }
 }
 
-# Check if running as administrator
-$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if (-not $isAdmin) {
-    Write-Host "⚠️ This script is not running with administrator privileges." -ForegroundColor Yellow
-    Write-Host "⚠️ Some operations may fail. Consider restarting as administrator." -ForegroundColor Yellow
-    $continueAnyway = Read-Host "🔄 Continue anyway? (y/n)"
-    if ($continueAnyway -ne "y" -and $continueAnyway -ne "Y") {
-        exit
-    }
-}
-
-# Check Python installation
-Write-Host "📋 Checking Python installation..." -ForegroundColor Yellow
+# Check for Python
 $pythonCommand = $null
+$pythonCommands = @("python", "python3")
 
-# Try possible Python commands
-if (Test-CommandExists "python") {
-    $pythonCommand = "python"
-}
-elseif (Test-CommandExists "python3") {
-    $pythonCommand = "python3"
-}
-elseif (Test-CommandExists "py") {
-    $pythonCommand = "py"
+foreach ($cmd in $pythonCommands) {
+    if (Test-CommandExists $cmd) {
+        $pythonVersion = & $cmd --version
+        if ($pythonVersion -match "Python 3") {
+            $pythonCommand = $cmd
+            Write-Host "✅ Found Python: $pythonVersion" -ForegroundColor Green
+            break
+        }
+    }
 }
 
 if ($pythonCommand) {
-    Write-Host "✅ Python found: $pythonCommand" -ForegroundColor Green
+    # Install Python dependencies
+    Write-Host "Setting up Python virtual environment..." -ForegroundColor Yellow
     
-    # Check Python version
-    $pythonVersion = & $pythonCommand --version 2>&1
-    if ($pythonVersion -is [string]) {
-        $pythonVersion = $pythonVersion.Split(" ")[1]
-    }
-    else {
-        $pythonVersion = $pythonVersion.ToString().Split(" ")[1]
+    # Create virtual environment
+    $venvPath = Join-Path $projectDir "venv"
+    if (-not (Test-Path $venvPath)) {
+        & $pythonCommand -m venv $venvPath
+        Write-Host "✅ Created Python virtual environment" -ForegroundColor Green
+    } else {
+        Write-Host "✅ Python virtual environment already exists" -ForegroundColor Green
     }
     
-    Write-Host "✅ Python $pythonVersion found" -ForegroundColor Green
-    
-    # Check if Python version is compatible (3.9-3.11 recommended for Streamlit)
-    $pythonMajor = [int]($pythonVersion.Split(".")[0])
-    $pythonMinor = [int]($pythonVersion.Split(".")[1])
-    
-    if ($pythonMajor -eq 3 -and $pythonMinor -ge 9 -and $pythonMinor -le 11) {
-        Write-Host "✅ Python $pythonVersion is compatible with Streamlit." -ForegroundColor Green
-    }
-    else {
-        Write-Host "⚠️ Python $pythonVersion may not be fully compatible with Streamlit." -ForegroundColor Yellow
-        Write-Host "ℹ️ Recommended version is Python 3.9-3.11." -ForegroundColor Yellow
-        $continueChoice = Read-Host "🔄 Continue anyway? (y/n)"
-        if ($continueChoice -ne "y" -and $continueChoice -ne "Y") {
-            exit
-        }
-    }
-}
-else {
-    Write-Host "❌ Python not found." -ForegroundColor Red
-    $installChoice = Read-Host "📥 Would you like to install Python now? (y/n)"
-    if ($installChoice -eq "y" -or $installChoice -eq "Y") {
-        Write-Host "📥 Opening Python download page..." -ForegroundColor Yellow
-        Start-Process "https://www.python.org/downloads/"
-        Write-Host "ℹ️ Please install Python 3.9-3.11 and make sure to check 'Add Python to PATH'" -ForegroundColor Yellow
-        Write-Host "ℹ️ After installation, please restart this script." -ForegroundColor Yellow
-        exit
-    }
-    else {
-        Write-Host "❌ Python is required to continue. Exiting script." -ForegroundColor Red
-        exit
-    }
-}
-
-# Check pip installation
-$pipCommand = $null
-if (Test-CommandExists "pip") {
-    $pipCommand = "pip"
-}
-elseif (Test-CommandExists "pip3") {
-    $pipCommand = "pip3"
-}
-
-if ($pipCommand) {
-    Write-Host "✅ $pipCommand is installed." -ForegroundColor Green
-}
-else {
-    Write-Host "❌ pip is not installed." -ForegroundColor Red
-    Write-Host "📥 Attempting to install pip..." -ForegroundColor Yellow
-    
-    # Try to install pip
-    & $pythonCommand -m ensurepip
-    
-    # Check if pip was installed
-    if (Test-CommandExists "pip") {
-        $pipCommand = "pip"
-        Write-Host "✅ pip installed successfully." -ForegroundColor Green
-    }
-    elseif (Test-CommandExists "pip3") {
-        $pipCommand = "pip3"
-        Write-Host "✅ pip installed successfully." -ForegroundColor Green
-    }
-    else {
-        Write-Host "❌ Failed to install pip." -ForegroundColor Red
-        Write-Host "📥 Downloading get-pip.py..." -ForegroundColor Yellow
+    # Activate virtual environment
+    $activateScript = Join-Path $venvPath "Scripts\Activate.ps1"
+    if (Test-Path $activateScript) {
+        & $activateScript
+        Write-Host "✅ Activated Python virtual environment" -ForegroundColor Green
         
-        Invoke-WebRequest -Uri "https://bootstrap.pypa.io/get-pip.py" -OutFile "get-pip.py"
-        & $pythonCommand get-pip.py
+        # Create requirements.txt file
+        $requirementsPath = Join-Path $projectDir "requirements.txt"
+        @"
+streamlit==1.27.0
+pandas==2.1.0
+matplotlib==3.7.3
+plotly==5.16.1
+python-dotenv==1.0.0
+requests==2.31.0
+"@ | Out-File -FilePath $requirementsPath -Encoding utf8
+        Write-Host "✅ Created requirements.txt file" -ForegroundColor Green
         
-        # Check if pip was installed
-        if (Test-CommandExists "pip") {
-            $pipCommand = "pip"
-            Write-Host "✅ pip installed successfully." -ForegroundColor Green
+        # Install Python packages
+        Write-Host "Installing Python packages..." -ForegroundColor Yellow
+        & pip install -r $requirementsPath
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ Installed Python packages" -ForegroundColor Green
+        } else {
+            Write-Host "❌ Failed to install Python packages" -ForegroundColor Red
         }
-        elseif (Test-CommandExists "pip3") {
-            $pipCommand = "pip3"
-            Write-Host "✅ pip installed successfully." -ForegroundColor Green
-        }
-        else {
-            Write-Host "❌ Failed to install pip. Please install it manually." -ForegroundColor Red
-            exit
-        }
+    } else {
+        Write-Host "❌ Failed to find virtual environment activation script" -ForegroundColor Red
     }
+} else {
+    Write-Host "❌ Python 3 is not installed. Please install Python 3 and run this script again." -ForegroundColor Red
+    $allToolsInstalled = $false
 }
 
-# Use current directory as project folder
-Write-Host "📂 Using current directory as project folder" -ForegroundColor Yellow
-$projectFolder = "."
-
-$streamlitScript = Read-Host "📄 Enter the name of your Streamlit script file (e.g., app.py)"
-if ([string]::IsNullOrEmpty($streamlitScript)) {
-    $streamlitScript = "app.py"
-    Write-Host "ℹ️ Using default name: $streamlitScript" -ForegroundColor Yellow
-}
-
-$workflowJson = Read-Host "📄 Enter the path to your n8n workflow JSON file (or leave empty if none)"
-if (-not [string]::IsNullOrEmpty($workflowJson) -and -not (Test-Path $workflowJson)) {
-    Write-Host "⚠️ n8n workflow file not found at: $workflowJson" -ForegroundColor Yellow
-    $continueChoice = Read-Host "🔄 Continue without workflow file? (y/n)"
-    if ($continueChoice -ne "y" -and $continueChoice -ne "Y") {
-        exit
+# Clone or update n8n repository
+$n8nDir = Join-Path $projectDir "n8n"
+if (-not (Test-Path $n8nDir)) {
+    Write-Host "Cloning n8n repository..." -ForegroundColor Yellow
+    git clone https://github.com/n8n-io/n8n.git $n8nDir
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Cloned n8n repository" -ForegroundColor Green
+    } else {
+        Write-Host "❌ Failed to clone n8n repository" -ForegroundColor Red
     }
-    $workflowJson = ""
-}
-
-# Already in the project folder
-Write-Host "📍 Working directory: $(Get-Location)" -ForegroundColor Yellow
-
-# Check and create virtual environment
-Write-Host "🔧 Setting up Python virtual environment..." -ForegroundColor Yellow
-
-try {
-    & $pythonCommand -m venv --help | Out-Null
-    $venvAvailable = $true
-}
-catch {
-    $venvAvailable = $false
-}
-
-if (-not $venvAvailable) {
-    Write-Host "❌ Python venv module not available." -ForegroundColor Red
-    Write-Host "📥 Attempting to install virtualenv..." -ForegroundColor Yellow
-    & $pipCommand install virtualenv
-    
-    if (-not (Test-CommandExists "virtualenv")) {
-        Write-Host "❌ Failed to install virtualenv. Please install it manually." -ForegroundColor Red
-        Write-Host "ℹ️ Run: pip install virtualenv" -ForegroundColor Yellow
-        exit
+} else {
+    Write-Host "Updating n8n repository..." -ForegroundColor Yellow
+    Push-Location $n8nDir
+    git pull
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Updated n8n repository" -ForegroundColor Green
+    } else {
+        Write-Host "❌ Failed to update n8n repository" -ForegroundColor Red
     }
+    Pop-Location
 }
 
-# Create virtual environment
-Write-Host "🔧 Creating Python virtual environment..." -ForegroundColor Yellow
-if (Test-Path "venv") {
-    Write-Host "⚠️ A virtual environment already exists." -ForegroundColor Yellow
-    $recreateVenv = Read-Host "🔄 Recreate virtual environment? (y/n)"
-    if ($recreateVenv -eq "y" -or $recreateVenv -eq "Y") {
-        Remove-Item -Recurse -Force "venv"
-        if ($venvAvailable) {
-            & $pythonCommand -m venv venv
-        }
-        else {
-            & virtualenv venv
-        }
-        Write-Host "✅ Virtual environment recreated." -ForegroundColor Green
-    }
-    else {
-        Write-Host "✅ Using existing virtual environment." -ForegroundColor Green
-    }
-}
-else {
-    if ($venvAvailable) {
-        & $pythonCommand -m venv venv
-    }
-    else {
-        & virtualenv venv
-    }
-    
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ Failed to create virtual environment." -ForegroundColor Red
-        exit
-    }
-    Write-Host "✅ Virtual environment created." -ForegroundColor Green
-}
-
-# Activate virtual environment
-Write-Host "🔌 Activating virtual environment..." -ForegroundColor Yellow
-$activateScript = ".\venv\Scripts\Activate.ps1"
-if (Test-Path $activateScript) {
-    . $activateScript
-    Write-Host "✅ Virtual environment activated." -ForegroundColor Green
-}
-else {
-    Write-Host "❌ Failed to activate virtual environment." -ForegroundColor Red
-    Write-Host "ℹ️ Try running: .\venv\Scripts\Activate.ps1" -ForegroundColor Yellow
-    exit
-}
-
-# Create requirements.txt if it doesn't exist
-if (-not (Test-Path "requirements.txt")) {
-    Write-Host "📝 Creating requirements.txt..." -ForegroundColor Yellow
+# Create .env file
+$envPath = Join-Path $projectDir ".env"
+if (-not (Test-Path $envPath)) {
     @"
-streamlit>=1.24.0
-requests>=2.28.0
-pandas>=1.5.0
-"@ | Out-File -FilePath "requirements.txt" -Encoding utf8
-    Write-Host "✅ Created requirements.txt with basic dependencies" -ForegroundColor Green
-}
-else {
-    Write-Host "✅ Using existing requirements.txt" -ForegroundColor Green
-    
-    # Check if streamlit is in requirements.txt
-    $requirementsContent = Get-Content "requirements.txt"
-    if (-not ($requirementsContent -match "streamlit")) {
-        Write-Host "⚠️ Streamlit not found in requirements.txt" -ForegroundColor Yellow
-        $addStreamlit = Read-Host "📥 Add streamlit to requirements.txt? (y/n)"
-        if ($addStreamlit -eq "y" -or $addStreamlit -eq "Y") {
-            "streamlit>=1.24.0" | Out-File -FilePath "requirements.txt" -Append -Encoding utf8
-            Write-Host "✅ Added streamlit to requirements.txt" -ForegroundColor Green
-        }
-    }
+# n8n Configuration
+N8N_PORT=5678
+N8N_WEBHOOK_URL=http://localhost:5678/webhook/
+
+# Streamlit Configuration
+STREAMLIT_PORT=8501
+"@ | Out-File -FilePath $envPath -Encoding utf8
+    Write-Host "✅ Created .env file" -ForegroundColor Green
+} else {
+    Write-Host "✅ .env file already exists" -ForegroundColor Green
 }
 
-# Install dependencies
-Write-Host "📦 Installing Python dependencies..." -ForegroundColor Yellow
-& $pipCommand install -r requirements.txt
+# Create docker-compose.yml
+$dockerComposePath = Join-Path $projectDir "docker-compose.yml"
+if (-not (Test-Path $dockerComposePath)) {
+    @"
+version: '3'
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Failed to install dependencies." -ForegroundColor Red
-    $continueChoice = Read-Host "🔄 Continue anyway? (y/n)"
-    if ($continueChoice -ne "y" -and $continueChoice -ne "Y") {
-        exit
-    }
-}
-else {
-    Write-Host "✅ Dependencies installed successfully." -ForegroundColor Green
-    
-    # Verify streamlit installation
-    if (-not (Test-CommandExists "streamlit")) {
-        Write-Host "❌ Streamlit installation not found in PATH." -ForegroundColor Red
-        Write-Host "⚠️ You might need to install it manually or restart your terminal." -ForegroundColor Yellow
-        $installStreamlit = Read-Host "📥 Install streamlit directly? (y/n)"
-        if ($installStreamlit -eq "y" -or $installStreamlit -eq "Y") {
-            & $pipCommand install streamlit
-            if (Test-CommandExists "streamlit") {
-                Write-Host "✅ Streamlit installed successfully." -ForegroundColor Green
-            }
-            else {
-                Write-Host "❌ Streamlit installation failed." -ForegroundColor Red
-                exit
-            }
-        }
-    }
-    else {
-        Write-Host "✅ Streamlit is available." -ForegroundColor Green
-    }
+services:
+  n8n:
+    image: n8nio/n8n
+    ports:
+      - "\${N8N_PORT}:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    environment:
+      - N8N_HOST=n8n
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:\${N8N_PORT}/
+    restart: always
+
+volumes:
+  n8n_data:
+"@ | Out-File -FilePath $dockerComposePath -Encoding utf8
+    Write-Host "✅ Created docker-compose.yml file" -ForegroundColor Green
+} else {
+    Write-Host "✅ docker-compose.yml file already exists" -ForegroundColor Green
 }
 
-# Create Streamlit webhook integration if it doesn't exist
+# Create Streamlit script
+$streamlitScript = Join-Path $projectDir "app.py"
 if (-not (Test-Path $streamlitScript)) {
-    Write-Host "📝 Creating Streamlit webhook integration script..." -ForegroundColor Yellow
     @"
 import streamlit as st
+import pandas as pd
 import requests
-import json
 import os
+from dotenv import load_dotenv
 
-# Page configuration
-st.set_page_config(page_title="n8n Workflow Trigger", page_icon="🔄")
+# Load environment variables
+load_dotenv()
+N8N_WEBHOOK_URL = os.getenv('N8N_WEBHOOK_URL')
 
-st.title("n8n Workflow Trigger")
-st.write("Click the button below to trigger your n8n workflow via webhook")
+# Set page configuration
+st.set_page_config(page_title="n8n Workflow Trigger", page_icon="📊")
 
-# Get webhook URL from environment variable or use default
-N8N_WEBHOOK_URL = os.environ.get("N8N_WEBHOOK_URL", "http://localhost:5678/webhook/your-webhook-path")
-
-# Allow user to set the webhook URL in the UI
-with st.sidebar:
-    st.header("Configuration")
+def main():
+    st.title("Finance Data Processing with n8n")
+    st.write("Upload financial data to process through your n8n workflow")
+    
+    # Input for n8n webhook URL
     webhook_url = st.text_input("n8n Webhook URL", value=N8N_WEBHOOK_URL)
     
-    if st.button("Save webhook URL", key="save_url"):
-        N8N_WEBHOOK_URL = webhook_url
-        st.success("Webhook URL updated!")
-
-# Function to trigger the webhook
-def trigger_n8n_webhook():
-    try:
-        # Get any user input
-        with st.expander("Webhook Parameters (Optional)", expanded=False):
-            param_input = st.text_area("JSON Parameters:", 
-                                     value='{\n  "example": "value"\n}',
-                                     height=150,
-                                     help="Add parameters to send to n8n in JSON format")
-            
-            # Parse the JSON parameters
-            try:
-                params = json.loads(param_input)
-            except json.JSONDecodeError:
-                st.warning("Invalid JSON. Using empty parameter set.")
-                params = {}
-        
-        # Display a spinner while making the request
-        with st.spinner("Triggering n8n workflow..."):
-            response = requests.post(webhook_url, json=params)
-        
-        # Check if the request was successful
-        if response.status_code in [200, 201]:
-            st.success(f"Workflow triggered successfully! Status code: {response.status_code}")
-            
-            # Display the response from n8n if there is one
-            if response.text:
-                with st.expander("Response details"):
-                    try:
-                        st.json(response.json())
-                    except:
-                        st.text(response.text)
-        else:
-            st.error(f"Failed to trigger workflow. Status code: {response.status_code}")
-            st.error(f"Response: {response.text}")
+    # File uploader
+    uploaded_file = st.file_uploader("Upload your financial data CSV", type=["csv"])
     
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error connecting to n8n: {str(e)}")
-        st.info("Make sure n8n is running and accessible.")
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {str(e)}")
+    if uploaded_file is not None:
+        # Read and show the data
+        df = pd.read_csv(uploaded_file)
+        st.write("Preview of uploaded data:")
+        st.dataframe(df.head())
+        
+        # Process button
+        if st.button("Process Data"):
+            with st.spinner("Processing data through n8n workflow..."):
+                try:
+                    # Convert DataFrame to JSON
+                    data = df.to_dict(orient="records")
+                    
+                    # Send to n8n webhook
+                    response = requests.post(
+                        webhook_url, 
+                        json={"data": data}
+                    )
+                    
+                    if response.status_code == 200:
+                        st.success("Data successfully processed!")
+                        # Display the result from n8n if available
+                        try:
+                            result = response.json()
+                            st.json(result)
+                        except:
+                            st.write("Process completed.")
+                    else:
+                        st.error(f"Error: {response.status_code}")
+                        st.write(response.text)
+                except Exception as e:
+                    st.error(f"An error occurred: {e}")
 
-# Create a prominent button to trigger the webhook
-if st.button("🚀 Trigger n8n Workflow", type="primary", use_container_width=True):
-    trigger_n8n_webhook()
-
-# Add some helpful information
-with st.expander("How to set up your n8n webhook"):
-    st.markdown("""
-    1. In n8n, add a **Webhook node** as a trigger for your workflow
-    2. Configure it as a webhook (rather than test webhook)
-    3. Copy the webhook URL from n8n
-    4. Paste it in the **n8n Webhook URL** field in the sidebar
-    5. Click "Save webhook URL"
-    6. Click the "Trigger n8n Workflow" button to execute your workflow
-    """)
-
-# Connection status check
-with st.sidebar:
-    if st.button("Check n8n connection", key="check_connection"):
-        try:
-            # Just check if the n8n server is reachable
-            base_url = webhook_url.split('/webhook/')[0]
-            response = requests.get(f"{base_url}/healthz", timeout=5)
-            if response.status_code == 200:
-                st.success(f"✅ n8n server is reachable!")
-            else:
-                st.warning(f"⚠️ n8n server returned status code: {response.status_code}")
-        except requests.exceptions.RequestException as e:
-            st.error(f"❌ Cannot connect to n8n: {str(e)}")
-            st.info("Make sure n8n is running at the correct URL.")
-
-# Display the current webhook URL
-st.caption(f"Current webhook URL: {webhook_url}")
+if __name__ == "__main__":
+    main()
 "@ | Out-File -FilePath $streamlitScript -Encoding utf8
-    Write-Host "✅ Created Streamlit script: $streamlitScript" -ForegroundColor Green
-}
-else {
-    Write-Host "✅ Using existing Streamlit script: $streamlitScript" -ForegroundColor Green
+    Write-Host "✅ Created Streamlit application script" -ForegroundColor Green
+} else {
+    Write-Host "✅ Streamlit application script already exists" -ForegroundColor Green
 }
 
-# Check if Node.js is installed for n8n setup
-Write-Host "📋 Checking for Node.js installation..." -ForegroundColor Yellow
-if (Test-CommandExists "node") {
-    Write-Host "✅ Node.js is installed" -ForegroundColor Green
-    
-    # Check Node.js version
-    $nodeVersion = & node -v
-    Write-Host "✅ Node.js version: $nodeVersion" -ForegroundColor Green
-    
-    # Check if npm is installed
-    if (Test-CommandExists "npm") {
-        Write-Host "✅ npm is installed" -ForegroundColor Green
-        
-        # Check if n8n is already installed
-        Write-Host "📋 Checking if n8n is installed..." -ForegroundColor Yellow
-        if (Test-CommandExists "n8n") {
-            Write-Host "✅ n8n is already installed" -ForegroundColor Green
-            $n8nVersion = & n8n --version
-            Write-Host "✅ n8n version: $n8nVersion" -ForegroundColor Green
-        }
-        else {
-            Write-Host "❌ n8n is not installed" -ForegroundColor Red
-            $installN8n = Read-Host "📥 Would you like to install n8n globally? (y/n)"
-            if ($installN8n -eq "y" -or $installN8n -eq "Y") {
-                Write-Host "📥 Installing n8n globally via npm..." -ForegroundColor Yellow
-                
-                if ($isAdmin) {
-                    npm install n8n -g
-                }
-                else {
-                    Write-Host "⚠️ Not running as administrator. You may need to run as admin for global npm installs." -ForegroundColor Yellow
-                    $installAnyway = Read-Host "📥 Try to install anyway? (y/n)"
-                    if ($installAnyway -eq "y" -or $installAnyway -eq "Y") {
-                        npm install n8n -g
-                    }
-                    else {
-                        Write-Host "❌ n8n installation cancelled." -ForegroundColor Red
-                        exit
-                    }
-                }
-                
-                if (Test-CommandExists "n8n") {
-                    $n8nVersion = & n8n --version
-                    Write-Host "✅ n8n installed successfully! Version: $n8nVersion" -ForegroundColor Green
-                }
-                else {
-                    Write-Host "❌ n8n installation failed." -ForegroundColor Red
-                    Write-Host "ℹ️ You may need higher permissions to install global packages." -ForegroundColor Yellow
-                    Write-Host "ℹ️ Try running this script as administrator." -ForegroundColor Yellow
-                    exit
-                }
-            }
-            else {
-                Write-Host "❌ n8n is required for this setup." -ForegroundColor Red
-                exit
-            }
-        }
-    }
-    else {
-        Write-Host "❌ npm is not installed." -ForegroundColor Red
-        Write-Host "ℹ️ Your Node.js installation may be incomplete or corrupted." -ForegroundColor Yellow
-        exit
-    }
-}
-else {
-    Write-Host "❌ Node.js is not installed." -ForegroundColor Red
-    $installNode = Read-Host "📥 Install Node.js now? (y/n)"
-    if ($installNode -eq "y" -or $installNode -eq "Y") {
-        Write-Host "📥 Opening Node.js download page..." -ForegroundColor Yellow
-        Start-Process "https://nodejs.org/en/download/"
-        Write-Host "ℹ️ Please install Node.js LTS version and make sure to check 'Add to PATH'" -ForegroundColor Yellow
-        Write-Host "ℹ️ After installation, please restart this script." -ForegroundColor Yellow
-        exit
-    }
-    else {
-        Write-Host "❌ Node.js is required for n8n. Exiting script." -ForegroundColor Red
-        exit
+# Create a startup script
+$startupScript = Join-Path $projectDir "start.ps1"
+if (-not (Test-Path $startupScript)) {
+    @"
+# Start the Finance Automation Environment
+
+# Load .env file
+`$envFile = Join-Path `$PSScriptRoot ".env"
+Get-Content `$envFile | ForEach-Object {
+    if (`$_ -match '(.+)=(.+)') {
+        `$key = `$Matches[1]
+        `$value = `$Matches[2]
+        [Environment]::SetEnvironmentVariable(`$key, `$value, [EnvironmentVariableTarget]::Process)
     }
 }
 
-# Create n8n startup script
-Write-Host "📝 Creating n8n startup script..." -ForegroundColor Yellow
-@"
-@echo off
-echo 🚀 Starting n8n...
-echo ℹ️ n8n will be available at http://localhost:5678
-n8n start
-"@ | Out-File -FilePath "start_n8n.bat" -Encoding utf8
-Write-Host "✅ Created n8n startup script." -ForegroundColor Green
-
-# Instructions for importing workflow
-if (-not [string]::IsNullOrEmpty($workflowJson) -and (Test-Path $workflowJson)) {
-    Write-Host "📋 n8n workflow found: $workflowJson" -ForegroundColor Yellow
-    Write-Host "ℹ️ After n8n starts, import the workflow at http://localhost:5678" -ForegroundColor Yellow
-    Write-Host "ℹ️ Click the gear icon (top right) → 'Import Workflow'" -ForegroundColor Yellow
-    Write-Host "ℹ️ Select the file: $workflowJson" -ForegroundColor Yellow
-}
-
-# Create a comprehensive start script
-Write-Host "📝 Creating comprehensive start script..." -ForegroundColor Yellow
-@"
-@echo off
-REM Script to start both Streamlit and n8n in the current project directory
-set ERRORLEVEL=0
-
-echo ========================================================
-echo 🚀 Starting Streamlit and n8n
-echo ========================================================
-
-REM Check if ports are in use
-powershell -Command "if (Test-NetConnection -ComputerName localhost -Port 8501 -InformationLevel Quiet) { exit 1 } else { exit 0 }"
-if %ERRORLEVEL% NEQ 0 (
-    echo ⚠️ Port 8501 is already in use. Streamlit may not start correctly.
-    choice /C YN /M "🔄 Continue anyway?"
-    if %ERRORLEVEL% NEQ 1 goto :EOF
-)
-
-powershell -Command "if (Test-NetConnection -ComputerName localhost -Port 5678 -InformationLevel Quiet) { exit 1 } else { exit 0 }"
-if %ERRORLEVEL% NEQ 0 (
-    echo ⚠️ Port 5678 is already in use. n8n may not start correctly.
-    choice /C YN /M "🔄 Continue anyway?"
-    if %ERRORLEVEL% NEQ 1 goto :EOF
-)
-
-REM Start n8n in a new window
-echo 🚀 Starting n8n...
-start "n8n" cmd /c "n8n start"
-echo ✅ n8n started in a new window
-echo ℹ️ n8n will be available at http://localhost:5678
-
-REM Give n8n time to start
-echo ⏳ Waiting for n8n to initialize...
-timeout /t 10 /nobreak > nul
-
-REM Activate virtual environment
-echo 🔌 Activating virtual environment...
-call venv\Scripts\activate
-
-REM Check if Streamlit is installed in the virtual environment
-where streamlit > nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo ❌ Streamlit not found in the virtual environment.
-    echo 📥 Installing Streamlit...
-    pip install streamlit
-    if %ERRORLEVEL% NEQ 0 (
-        echo ❌ Failed to install Streamlit. Please install it manually.
-        exit /b 1
+# Function to start a process in a new window
+function Start-ProcessInNewWindow {
+    param (
+        [string] `$Command,
+        [string] `$WorkingDirectory,
+        [string] `$Title
     )
-)
-
-REM Start Streamlit app
-echo 🚀 Starting Streamlit app...
-echo ℹ️ Streamlit will be available at: http://localhost:8501
-streamlit run $streamlitScript
-
-REM Note: This script doesn't properly handle stopping n8n when Streamlit is stopped
-REM If you want to stop n8n, you'll need to close its window manually
-"@ | Out-File -FilePath "start_apps.bat" -Encoding utf8
-
-Write-Host "========================================================" -ForegroundColor Cyan
-Write-Host "✅ Setup complete!" -ForegroundColor Green
-Write-Host "========================================================" -ForegroundColor Cyan
-Write-Host "📋 To start your applications:" -ForegroundColor Yellow
-Write-Host "   1. Run: .\start_apps.bat from this directory" -ForegroundColor Yellow
-Write-Host "   - Streamlit will be available at: http://localhost:8501" -ForegroundColor Yellow
-Write-Host "   - n8n will be available at: http://localhost:5678" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "ℹ️ Remember to update the N8N_WEBHOOK_URL in your Streamlit app" -ForegroundColor Yellow
-Write-Host "   with the actual webhook URL from your n8n workflow." -ForegroundColor Yellow
-Write-Host "========================================================" -ForegroundColor Cyan
-
-# Ask if they want to start the applications now
-$startNow = Read-Host "🚀 Do you want to start the applications now? (y/n)"
-if ($startNow -eq "y" -or $startNow -eq "Y") {
-    & .\start_apps.bat
+    
+    Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "& {Set-Location '`$WorkingDirectory'; `$host.UI.RawUI.WindowTitle='`$Title'; `$Command}"
 }
-else {
-    Write-Host "👋 You can start the applications later by running: .\start_apps.bat" -ForegroundColor Green
+
+# Start Docker containers for n8n
+Write-Host "Starting n8n..." -ForegroundColor Yellow
+Start-ProcessInNewWindow -Command "docker-compose up" -WorkingDirectory `$PSScriptRoot -Title "n8n Docker"
+
+# Wait for n8n to start
+Write-Host "Waiting for n8n to start..." -ForegroundColor Yellow
+Start-Sleep -Seconds 10
+
+# Activate Python virtual environment and start Streamlit
+`$venvActivate = Join-Path `$PSScriptRoot "venv\Scripts\Activate.ps1"
+`$streamlitPort = [Environment]::GetEnvironmentVariable("STREAMLIT_PORT")
+Write-Host "Starting Streamlit on port `$streamlitPort..." -ForegroundColor Yellow
+
+Start-ProcessInNewWindow -Command ". '`$venvActivate'; streamlit run app.py --server.port=`$streamlitPort" -WorkingDirectory `$PSScriptRoot -Title "Streamlit App"
+
+# Open the browser
+Start-Sleep -Seconds 3
+Start-Process "http://localhost:`$streamlitPort"
+
+Write-Host "✅ Environment started successfully!" -ForegroundColor Green
+Write-Host "n8n is running at: http://localhost:`$env:N8N_PORT" -ForegroundColor Cyan
+Write-Host "Streamlit is running at: http://localhost:`$streamlitPort" -ForegroundColor Cyan
+"@ | Out-File -FilePath $startupScript -Encoding utf8
+    Write-Host "✅ Created startup script" -ForegroundColor Green
+} else {
+    Write-Host "✅ Startup script already exists" -ForegroundColor Green
+}
+
+# Display completion message and next steps
+if ($allToolsInstalled) {
+    Write-Host "`n✅ Setup completed successfully!" -ForegroundColor Green
+    Write-Host "`nNext steps:" -ForegroundColor Cyan
+    Write-Host "1. Navigate to the project directory: cd $projectDir" -ForegroundColor White
+    Write-Host "2. Run the startup script: ./start.ps1" -ForegroundColor White
+    Write-Host "3. Configure your n8n workflows at http://localhost:5678/" -ForegroundColor White
+    Write-Host "4. Use the Streamlit interface at http://localhost:8501/" -ForegroundColor White
+} else {
+    Write-Host "`n⚠️ Setup completed with warnings." -ForegroundColor Yellow
+    Write-Host "Please install the missing dependencies and run the script again." -ForegroundColor Yellow
 }
