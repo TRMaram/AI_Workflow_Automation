@@ -212,6 +212,24 @@ CREATE TABLE "public"."companies" (
 Automated_setup.bat ---> windows
 Automated_setup.sh --> Linux
 
+
+### How to Use Automated_setup.ps1
+
+
+1- Open PowerShell as administrator (recommended)
+2- Navigate to your project directory
+3- Run the script with: .\Automated_setup.ps1
+4- Follow the prompts to complete the setup
+
+### How to Use Automated_setup.sh
+
+
+1- Open terminal as administrator (recommended)
+2- Navigate to your project directory
+3- Run the script with: sh Automated_setup.sh
+4- Follow the prompts to complete the setup
+
+
 ### Features of the Automated Setup Scripts
 Both scripts provide the following features:
 
