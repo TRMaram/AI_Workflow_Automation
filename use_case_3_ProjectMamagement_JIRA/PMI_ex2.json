@@ -1,0 +1,511 @@
+{
+  "name": "PMI_ex2",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rosiemt29.atlassian.net/rest/api/3/issue/bulkfetch",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "authorization",
+              "value": "Basic cm9zaWVtdDI5QGdtYWlsLmNvbTpBVEFUVDN4RmZHRjBnRDVnbUo5MDIwZWN4emRtZ19ycEozZmxLV3F6ZVBITXVaejB0YWZUdUhKVk1oaS1zT2xTT2tWTUN4d3VvbTM1bi1Ja2lJa182S0YyQWN2dENhSm52dWJLdWVpMHBUeGt6Y2drMXF0OENWUUQ4T0RwZzhMcmhQMnVGWVcxT214UndxYVF4eU8xRFF1c0xhaXVCeE1oSzhxWm5PQXpFZkVBeUVjTlJoTFRkVWs9RUI3MTUzNkI="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"expand\": [\n    \"names\"\n  ],\n  \"fields\": [\n    \"summary\",\n    \"project\",\n    \"assignee\",\n    \"duedate\",\n    \"created\",\n    \"resolution\",\n    \"ended\",\n    \"status\",\n    \"priority\",\n    \"updated\"\n  ],\n  \"fieldsByKeys\": false,\n  \"issueIdsOrKeys\": [\n    \"PM-198\",\n    \"PM-197\",\n    \"PM-196\",\n    \"PM-195\",\n    \"PM-194\",\n    \"PM-193\",\n    \"PM-192\",\n    \"PM-191\",\n    \"PM-190\",\n    \"PM-189\",\n    \"PM-188\",\n    \"PM-187\",\n    \"PM-186\",\n    \"PM-185\",\n    \"PM-184\",\n    \"PM-183\",\n    \"PM-182\",\n    \"PM-181\",\n    \"PM-180\",\n    \"PM-179\",\n    \"PM-99\",\n    \"PM-89\",\n    \"PM-88\",\n    \"PM-87\",\n    \"PM-86\",\n    \"PM-85\",\n    \"PM-84\"\n  ],\n  \"properties\": []\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        280,
+        -120
+      ],
+      "id": "b72be3fa-0603-4084-938a-38d0444c4da7",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        280,
+        -700
+      ],
+      "id": "ff53f622-1982-4461-8925-dd178fa1c46f",
+      "name": "Jira Software1",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "YdvFt7v4vz7qIXDq",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        60,
+        -400
+      ],
+      "id": "302fca2e-14a8-4120-b7e0-611a03a2656c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "issues",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        500,
+        -120
+      ],
+      "id": "43e0c918-e060-4868-9dca-94e28c4a30a1",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=i want you to analyze this input {{ $json.data.toJsonString() }}\nkeep in mind that dev Team Beta is Junior support\nand dev Team Alpha is Senior support\n\ncalculate and return an analsis based on these points : \n*Nombre de bugs\ncritiques non résolus\ndepuis > 48h\n\n*Vélocité de\ndéveloppement\n(tâches terminées par\nsprint)\n\n*AvgResolutionTime\n\n*JuniorSupportLoad \n\n*SeniorSupportLoad \n\n* DevBlockedTasks\n\n* OpenNormalBugs\n\n*OpenCriticalBugs\n\nreturn only the json output.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        740,
+        -400
+      ],
+      "id": "613ff291-705c-4b68-8472-0fe43c7eeb29",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        740,
+        -240
+      ],
+      "id": "8c64f348-e482-47d7-a0f6-5cd22f85d638",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10hGpP62fkAAbXmzAqgl3z6jQZ81p1jlf8WBhHcHYE8k",
+          "mode": "list",
+          "cachedResultName": "data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10hGpP62fkAAbXmzAqgl3z6jQZ81p1jlf8WBhHcHYE8k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1335519225,
+          "mode": "list",
+          "cachedResultName": "data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10hGpP62fkAAbXmzAqgl3z6jQZ81p1jlf8WBhHcHYE8k/edit#gid=1335519225"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        280,
+        -400
+      ],
+      "id": "3a6e3b94-268e-4137-9972-3c0605f8f4fd",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tm7swUhA6BTj9mtk",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nlet data = $input.all();\n\nreturn {data};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        -400
+      ],
+      "id": "4584bee5-5806-4770-a607-82226cfb2bc8",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=your an assistant in Predictive Analytics:\nINPUT :\nhistorical_benchmarks : google sheets tool\ncurrent_trends : {{ $json.output.replaceAll(\"```json\",\"\") }}\n\n\ncall historical_benchmarks tool\no Process: The model compares current_trends against historical_benchmarks to identify potential delays or issues.\n\no Action: Feed the collected data to a predictive model to assess risk levels.\n\n3. Threshold Check:\no Action:  risk thresholds (if predicted delay probability exceeds\n30%). \n\n\n4. after analysis return the predicted result in this format :\n{\n  \"delay_risk\": %, // e.g 40%\n  \"recommended_action\": \"\" // e.g assign critical to senior\n}\n\nreturn only the analysis summary, only the json result.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        1100,
+        -400
+      ],
+      "id": "9cf52368-0b94-4bed-8fa2-dbea89214e12",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10hGpP62fkAAbXmzAqgl3z6jQZ81p1jlf8WBhHcHYE8k",
+          "mode": "list",
+          "cachedResultName": "data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10hGpP62fkAAbXmzAqgl3z6jQZ81p1jlf8WBhHcHYE8k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1295918270,
+          "mode": "list",
+          "cachedResultName": "historical_benchmarks",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10hGpP62fkAAbXmzAqgl3z6jQZ81p1jlf8WBhHcHYE8k/edit#gid=1295918270"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        1260,
+        -180
+      ],
+      "id": "a60f4ff9-5246-4f17-8a82-6f1a55ed6962",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tm7swUhA6BTj9mtk",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1140,
+        -180
+      ],
+      "id": "c4ba38d6-b178-4faf-a4c9-205612667d78",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7e9beecc-f6d4-4946-958d-85fd6b51c237",
+              "leftValue": "={{ $json['Delay Risk:'] }}",
+              "rightValue": 30,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1680,
+        -400
+      ],
+      "id": "3d1b3209-8a21-4d05-96a9-4406995a61fa",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "let data =$input.first().json.output.replaceAll(\"```json\",\"\").replaceAll(\"```\",\"\").replaceAll(\"\\n\",\"\");\nlet res = JSON.parse(data);\nreturn {\"Delay Risk:\" :  res.delay_risk , \"Recommended Action:\" : res.recommended_action}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1460,
+        -400
+      ],
+      "id": "74df924b-0b64-4c92-8b7d-be1a9cc1cc6a",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "sendTo": "Maramtrabelsi1212@gmail.com",
+        "subject": "🚨 Project Risk Alert: Follow-up Tasks Required",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Project Risk Alert</title>\n</head>\n<body style=\"font-family: Arial, sans-serif; color: #333; line-height: 1.6;\">\n  <div style=\"max-width: 600px; margin: 0 auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;\">\n    <h2 style=\"color: #d9534f;\">🚨 Project Risk Alert</h2>\n    \n    <p>Hello,</p>\n\n    <p>\n      The project monitoring system has detected a delay risk score of \n      <strong>{{ $json['Delay Risk:'] }}%</strong>.\n    </p>\n\n    <p>\n      📌 <strong>Recommended Action:</strong> \n      {{ $json['Recommended Action:'] }}\n    </p>\n\n    <p>\n      Please create the necessary follow-up tasks in the project management tool \n      to mitigate the risk and avoid delivery delays.\n    </p>\n\n    <p>Best regards,<br>\n    <strong>Project Automation System</strong></p>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1940,
+        -420
+      ],
+      "id": "304bc48c-af27-4535-a4d9-b8c84af0bac5",
+      "name": "Gmail",
+      "webhookId": "148f651c-639e-4993-93c1-2f8ff528bf6c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XHVTWlMqhoM5pQnc",
+          "name": "Gmail account 6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1940,
+        -620
+      ],
+      "id": "024fc345-5183-4a24-9e34-3ce54a1348e7",
+      "name": "Slack",
+      "webhookId": "f6b06e9e-f52f-4c9b-b272-d51abad9bf2d"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "fields.summary",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "fields.duedate, fields.created, fields.priority.name, fields.updated, fields.resolution, fields.status.name",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -120
+      ],
+      "id": "114aae1b-7f5a-4142-b9be-c74a47735af5",
+      "name": "Split Out"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Jira Software1": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Jira Software1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2cd62e0a-41e3-41f5-82f0-843c5a3be2a1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eda11f78dc41be1aa2e6362cde9ae6dd4b7bbe5c2c22874197c6fa1fa408e45b"
+  },
+  "id": "v9Jd9lr60T4foCO4",
+  "tags": []
+}
