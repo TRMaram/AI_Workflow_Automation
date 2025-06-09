@@ -1,0 +1,1550 @@
+{
+  "name": "PMI copy",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "q": "has:attachment"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -360,
+        860
+      ],
+      "id": "ff6cbd86-840c-44bf-a7a5-85390d83a4d0",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "L0GJ0pLlGkBHUGe0",
+          "name": "Gmail account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "=  {{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5941ac9b-0d7a-48bb-b629-59b521dff16f",
+      "name": "Get only the text",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        620,
+        860
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $binary.attachment_0.mimeType }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a26e1ff6-ac77-43e2-8cdf-34d1cd45b43a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "b3d19f78-cc97-4287-9570-85430e65acf4",
+                    "leftValue": "={{ $binary.attachment_0.mimeType }}",
+                    "rightValue": "=image/",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "f88aa616-408c-4241-834d-a20015220abc",
+                    "leftValue": "={{ $binary.attachment_0.mimeType }}",
+                    "rightValue": "application/vnd.google-apps.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "291f2639-deb6-4ed6-aea0-09ab9e9c6cd6",
+                    "leftValue": "={{ $binary.attachment_0.mimeType }}",
+                    "rightValue": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": true
+        }
+      },
+      "id": "5b08112e-02c5-4f64-805e-0ef485fb526e",
+      "name": "Switch1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -160,
+        840
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        880,
+        860
+      ],
+      "id": "3c8975b8-441c-400c-8640-54ae001ce4f8",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.text ||$json.data }}  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "66dbfa0f-0639-4d41-b1ab-31294c5cb127",
+      "name": "Get only the text1",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        600,
+        1040
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3ac1eaba-2ab7-42a9-abdf-79e97b716940",
+      "name": "Get only the text2",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        620,
+        500
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        260,
+        1080
+      ],
+      "id": "6840c9fc-dc3c-4b97-b4a8-7fa8467108a1",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        280,
+        500
+      ],
+      "id": "da20f7a6-1479-4187-acac-6d43c76a3519",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "inputBinaryField": "attachment_0"
+      },
+      "type": "n8n-nodes-docx-converter.docxToText",
+      "typeVersion": 1,
+      "position": [
+        260,
+        1240
+      ],
+      "id": "4a14e332-c4e7-4c65-9b09-dcc624d8b0ec",
+      "name": "DOCX to Text"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "choices[0].message.content",
+              "type": "string",
+              "value": "={{ $json.text ||$json.data }}  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f2f71355-504c-410d-8b25-382ebb3d515e",
+      "name": "Get only the text6",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        600,
+        1240
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.1.24:5000/ocr/GOT",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "attachment_0",
+              "inputDataFieldName": "attachment_0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        280,
+        840
+      ],
+      "id": "83b4d86a-6126-4f77-a55c-167a57082079",
+      "name": "GOT_OCR"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "maramtrabelsi1212@gmail.com",
+        "subject": "Approval Required",
+        "message": "={{ $json.output }}",
+        "responseType": "customForm",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Report Confirmed ?",
+              "fieldType": "textarea",
+              "placeholder": "Confirmed",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1560,
+        700
+      ],
+      "id": "633b5b88-1458-4e26-adc2-5ec781a6e210",
+      "name": "Gmail",
+      "webhookId": "0a132b89-4f6b-4c30-9091-f6806953971a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "L0GJ0pLlGkBHUGe0",
+          "name": "Gmail account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are ActionReview AI — a smart assistant specialized in reviewing and validating task items derived from project meeting minutes. Your role is to analyze the supervisor’s reply to a list of proposed action items, identify if any corrections are needed, and return the final validated action list — either as-is or with corrections applied.\n\n🔹 INPUTS\noriginal_actions: The list of action items extracted from the meeting. ({{ $('AI Agent2').item.json.output }})\n\nsupervisor_reply: The supervisor’s feedback. ({{ $json.data['Report Confirmed ?'] }})\n\n🔹 RULES\nAnalyze Supervisor Reply:\n\nIf the supervisor confirms the action list:\n\nReturn original_actions unchanged.\n\nIf the supervisor requests changes:\n\nExtract corrections in this format:\n\n[\n  {\n    \"field_to_correct\": \"description\" | \"assigned_to\" | \"due_date\" | \"notes\",\n    \"original_value\": \"string\",\n    \"suggested_change\": \"string\",\n    \"reason\": \"optional string\"\n  }\n]\nApply Corrections:\n\nUpdate original_actions with the corrections.\n\nReturn the modified updated_actions.\n\n🔹 OUTPUT FORMAT\nOnly return the final actions as a json.\n{\n  \"project_name\" : \"\",\n  \"Status\":\"\",\n  \"actions\": [\n    {\"assigned_to\" : \"\",\n      \"due_date\" : \"\", #change the date format to yyyy-MM-dd\n      \"description\" : \"description\" \"assigned_to\" \"due_date\",\n      \"summaries\":\"notes\",\n      \"status\":\"\"\n    }\n  ]\n\"Scheduled meeting\": [\n\"meeting_date\":\"\",\n\"meeting_time\":\"\",\n\"meeting_subject\":\"\"\n]\n}\nNo status object. No commentary. No extra text.\nJust the final validated actions — corrected if needed, unchanged if confirmed.\n\n",
+        "hasOutputParser": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        1560,
+        940
+      ],
+      "id": "0a938557-b8d0-48b8-8505-961e4ab351ac",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1600,
+        1140
+      ],
+      "id": "4a2ec325-525c-40b7-aa56-0b0e9066bcb8",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{  \"project_name\": \"AI Automation for Backlog Creation in Project Management\", \"status\" :\"initial meeting \",\"actions\": [    {     \"description\": \"Write meeting summaries with clear task assignments for each engineer\",      \"assigned_to\": \"Sonia\",      \"due_date\": \"25/05/2025\",      \"summaries\": \"Summaries should be detailed enough for AI processing; not overly technical\"   },  {      \"description\": \"Select OCR model for information extraction\", \"status\":\"TO DO\",     \"assigned_to\": \"Maram\",      \"due_date\": \"20/05/2025\",      \"summaries\": \"Applies to processing image-based summaries\"    }],\"Scheduled_meeting\": [\n{\"meeting_date\":\"\",\n\"meeting_time\":\"\",\n\"meeting_subject\":\"\"\n}]}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1780,
+        1140
+      ],
+      "id": "35341d62-9f72-4b95-bbde-53daa94ada29",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nlet originalList = $json.output.Scheduled_meeting ;\n\nreturn {originalList};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        1420
+      ],
+      "id": "5f8d133b-fb61-4c50-9c68-848acd72cc00",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "originalList",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2580,
+        1420
+      ],
+      "id": "b1560a83-cd7f-441a-85ac-e4f93ca6036f",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=you are a scheduler IA , i want you to help add this meeting to my calender and keep in my mind that the time now is {{ $now }} and the timeZone is Central European Standard Time (GMT+1):\nmeeting_details :\nmeeting_date : {{ $json.originalList[0].meeting_date }}\nmeeting_time :  {{ $json.originalList[0].meeting_time }}\nmeeting_subject :{{ $json.originalList[0].meeting_subject }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        2800,
+        1420
+      ],
+      "id": "6e9eed13-f30e-4798-a0ae-a2064cc59cb5",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2840,
+        1640
+      ],
+      "id": "0243a09c-489d-412e-88c5-402fb75530c5",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "rosiemt29@gmail.com",
+          "mode": "list",
+          "cachedResultName": "rosiemt29@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        3160,
+        1640
+      ],
+      "id": "8e9c92d7-2532-4cdf-a680-3bde02e37900",
+      "name": "Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "DwXml0uWIwNkJPW8",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2600,
+        1160
+      ],
+      "id": "f952d1c6-526d-4f3d-a4eb-d633a5ca1521",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3240,
+        720
+      ],
+      "id": "02dd955e-da99-4c18-9429-5f3c4f6f048f",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "options": {
+          "jql": "=project={{ $('Code2').item.json.transformedList[0].project_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.jiraTool",
+      "typeVersion": 1,
+      "position": [
+        3680,
+        560
+      ],
+      "id": "5e65373d-e889-4fc0-bf69-9ce8a7cf7954",
+      "name": "get_all_issues_id",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "YdvFt7v4vz7qIXDq",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "issueKey": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Issue_Key', ``, 'string') }}",
+        "updateFields": {
+          "statusId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}",
+            "__regex": "^([0-9]{1,})"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.jiraTool",
+      "typeVersion": 1,
+      "position": [
+        3620,
+        760
+      ],
+      "id": "9a644db5-2f63-4ea6-83c3-e458ef47c2ad",
+      "name": "update_issues",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "YdvFt7v4vz7qIXDq",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant responsible for updating Jira task status.\nInput : \n\"project_id\":{{ $json.transformedList[0].project_id }}\nThe user will input a new tasks descriptions\n\"new_tasks\":{{ $json.transformedList.toJsonString() }}\nYou have access to:\n\nget_all_issues_id(project_id) → retrieves a list of issues from project(project_id), each with:\n  * id: the issue identifier (e.g., JIRA-123)\n  * actions: the current task description\n  * status: the current status of the task (e.g done, to do, in progress)\n\n  update_issues(status_id, id) → updates  the task with the given status_id.\n\ncreate_issue(actions,project_id) → creates a new Jira task with the given description.\n\n\n\n\nYour responsibilities:\n- Retrieve the current list of issues using get_all_issues_id(project_id).\n\n- convert the user-provided textual status to its numeric ID:\n\n\"done\" → 31\n\n\"in progress\" → 21\n\n\"to do\" → 11\n\n- For each new task description provided by the user:\n\nSearch for a matching or related task in the existing list.\n\nApply the following logic:\n\n✅ If a related task is found:\n\n- If the status of the existing task is done or  In Progress \n\nCall update_issues(status_id, id) — update the task status based on status_id.\n\nInform the user: \"✅ Task id updated (status: done).\"\n\n\n\n\nIf the status is to do:\n\nInform the user: \"ℹ️ Task id not updated (status not done).\"\n\n➕ If no related task is found and the new status is to do:\nfill in this json parameter with description, summaries and duedate(// The duedate must be of the format \"yyyy-MM-dd\") if duedate is empty put this as value \"2025-06-09\" : \n{\n  \"fields\": {\n    \"assignee\": {\n      \"id\": \"712020:2252e3e4-1471-49e6-8bd2-00914e2036eb\"\n    },\n    \"summary\":\"\",\n    \"duedate\": \"\", // The duedate must be of the format \"yyyy-MM-dd\" and if duedate is empty put this as value \"2025-06-09\"\n    \"issuetype\": {\n      \"name\": \"Task\"\n    },\n    \"project\": {\n      \"id\":\"{{ $json.transformedList[0].project_id }}\"\n    },\n    \"description\": {\n      \"content\": [\n        {\n          \"content\": [\n            {\n              \"text\": \"\",\n              \"type\": \"text\"\n            }\n          ],\n          \"type\": \"paragraph\"\n        }\n      ],\n      \"type\": \"doc\",\n      \"version\": 1\n    },\n    \"reporter\": {\n      \"id\": \"712020:2252e3e4-1471-49e6-8bd2-00914e2036eb\"\n    }\n}}\nCall create_issue(json) and send the json as parameter \n\nInform the user: \"🆕 New task created with description: new_action.\"\n\nIf the new action is identical or very similar to the existing one:\n\nSkip the update and notify: \"⏭️ No changes made to task id – content is similar.\"\n\n🧠 Final goal:\nAvoid redundant updates, only modify completed tasks or in progress tasks. Keep the Jira board accurate, clean, and up-to-date with minimal duplication.\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        3300,
+        500
+      ],
+      "id": "cf961a94-6e8b-480a-aa95-6d0803965708",
+      "name": "follow_up_report",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are JiraSync AI — an intelligent agent responsible for creating projects and creating and syncing task items into Jira.\n\nACTION:\nUse only the following tools:\n* create_project(project_name:string) // Creates a new Jira project\n\nCall it using:\n\n{\n  \"prject_name\":{{ $json.output.project_name }}\n  \"actions\":{{ $json.output.actions.toJsonString() }} ,\n}\nReturn only a clean JSON output confirming success or failure.\n\n🧠 AI Agent Logic: Project and Jira Issue Creation\n1- Create the Project\n\n   - Call: create_project(project_name)\n\n    - Capture the returned project id from the output of the create_project jira node .\n\n    - Ensure id is valid before proceeding.\n\n2- make sur the output is in plain json",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        2640,
+        960
+      ],
+      "id": "56e2f693-c948-4438-82ad-414505d50939",
+      "name": "initial_report"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "202ad09e-3571-48a9-a272-3a8d6f1f30fd",
+              "leftValue": "={{ $json.output.status.toLowerCase() }}",
+              "rightValue": "intermediary",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2020,
+        760
+      ],
+      "id": "1b1a6d8a-2100-4071-9157-73bb373e758e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 560,
+        "width": 1540
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2260,
+        360
+      ],
+      "typeVersion": 1,
+      "id": "8d6384be-5f1a-4dcf-b289-7fa620592caf",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 420,
+        "width": 1540,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2260,
+        940
+      ],
+      "typeVersion": 1,
+      "id": "2f37530b-606b-4da2-ae3f-abadcfc99ae3",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 420,
+        "width": 1040,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2260,
+        1380
+      ],
+      "typeVersion": 1,
+      "id": "f1304ef7-48a3-44ad-b2bc-b1999faaefee",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 1080,
+        "width": 1620,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -420,
+        360
+      ],
+      "typeVersion": 1,
+      "id": "ac4659c9-e973-4af0-be80-b842890ecf4b",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 1080,
+        "width": 980,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1240,
+        360
+      ],
+      "typeVersion": 1,
+      "id": "32ef647d-6ed9-45b8-80b7-bb9ac041500a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Read the following contract text: {{$json.choices[0].message.content}}\n\nYour tasks are:\n\n1- Identify and extract the following fields from the meeting content:\n{\n  \"project_name\": \"\",          // The name of the project discussed\n\"status\":\"\" // whether this is an initial meeting report or an intermediary meeting report where taks need to be updated\n  \"start_date\":\"\", // the date of the report\n  \"actions\": [                 // List of concrete actions or tasks discussed\n    {\n      \"description\": \"\",       // Brief description of the task\n      \"status\":\"\",  // TO DO or IN PROGRESS or DONE\n      \"assigned_to\": \"\",       // Person responsible for the task\n      \"due_date\": \"\",          // Deadline or due date\n      \"notes\": \"\"              // Any additional information related to the task\n    }\n  ],\n  \"meeting_date\": \"\",          // The date when the meeting took place\n  \"general_notes\": \"\"          // Any general notes not linked to specific actions\n}\n2- Ensure that the output contains the json above only.\n\n3- If a meeting is scheduled (look for explicit time/date mention or title keywords like “next meeting”), note this separately so it can be synced to Teams or Calendar.\n\n4- Keep the formatting consistent for direct Jira and Teams integration.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1560,
+        420
+      ],
+      "id": "b0b7b84e-d2ca-425b-b3a9-c6a9fa1d9e99",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1900,
+        480
+      ],
+      "id": "c321ff60-3ee1-4907-a2ed-abd5998a1605",
+      "name": "OpenAI Chat Model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rosiemt29.atlassian.net/rest/api/3/project",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "authorization",
+              "value": "Basic cm9zaWVtdDI5QGdtYWlsLmNvbTpBVEFUVDN4RmZHRjBnRDVnbUo5MDIwZWN4emRtZ19ycEozZmxLV3F6ZVBITXVaejB0YWZUdUhKVk1oaS1zT2xTT2tWTUN4d3VvbTM1bi1Ja2lJa182S0YyQWN2dENhSm52dWJLdWVpMHBUeGt6Y2drMXF0OENWUUQ4T0RwZzhMcmhQMnVGWVcxT214UndxYVF4eU8xRFF1c0xhaXVCeE1oSzhxWm5PQXpFZkVBeUVjTlJoTFRkVWs9RUI3MTUzNkI="
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "assigneeType",
+              "value": "PROJECT_LEAD"
+            },
+            {
+              "name": "leadAccountId",
+              "value": "712020:5c0f38f5-a7d2-444d-ba9f-b8c9bcbfc4c1"
+            },
+            {
+              "name": "projectTemplateKey",
+              "value": "com.pyxis.greenhopper.jira:gh-simplified-agility-scrum"
+            },
+            {
+              "name": "url",
+              "value": "http://atlassian.com"
+            },
+            {
+              "name": "projectTypeKey",
+              "value": "software"
+            },
+            {
+              "name": "name",
+              "value": "={{ $json.output.project_name }}"
+            },
+            {
+              "name": "key",
+              "value": "={{ $json.output.project_name.toUpperCase().match(/\\b[A-Z]/g).join('').substring(0, 5)}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        2800,
+        1160
+      ],
+      "id": "57b10766-7337-47e5-a5ff-92519fc2e269",
+      "name": "create_project"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nfunction normalizeAssignee(inputName) {\n  const name = inputName.toLowerCase();\n\n  const teamMap = [\n    {\n      aliases: [\"maram\", \"mara\", \"manom\", \"trabelsi\"],\n      jiraId: \"712020:2252e3e41471-49e6-8bd2-00914e2036eb\"\n    },\n    {\n      aliases: [\"iheb\", \"ihebih99\"],\n      jiraId: \"712020:90c222f1-6437-463b-ae70-9f3fc75d6cb6\"\n    },\n    {\n      aliases: [\"sonia\", \"gharsalli\"],\n      jiraId: \"615717bc9cdb9300724883d3\"\n    },\n    {\n      aliases: [\"engineering team\", \"iheb and manom\", \"iheb and maramm\"],\n      jiraIds: [\n        \"712020:90c222f1-6437-463b-ae70-9f3fc75d6cb6\",  // Iheb\n        \"712020:2252e3e41471-49e6-8bd2-00914e2036eb\"    // Maram\n      ]}\n  ];\n\n  for (const entry of teamMap) {\n    if (entry.aliases.some(alias => name.includes(alias))) {\n      return entry.jiraId || entry.jiraIds;\n    }\n  }\n\n  return inputName; // Return as-is if no match found\n}\n\n\nconst cleaned = $input.first().json.output.replace(/```json\\n?/, '').replace(/\\n```/, '').trim();\n\n\n  let project_id = JSON.parse(cleaned).project_id || JSON.parse(cleaned).projectID|| JSON.parse(cleaned).projectId;\n\n\nlet originalList = $input.last().json.output.actions;\n\nlet transformedList = originalList.map(item => ({\n  project_id: project_id,\n  description: `${item.due_date} - ${item.description} `,\n  summaries: item.summaries,\n  status:item.status,\n  due_date:item.due_date,\n  assigned_to : normalizeAssignee(item.assigned_to)\n}));\nreturn {transformedList};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3460,
+        960
+      ],
+      "id": "ed7b2cd8-1c2e-4bbd-8f7a-78f6a20f32de",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "transformedList",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        3640,
+        960
+      ],
+      "id": "5dc21d6a-92f5-4f50-9718-8364ff77a693",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3280,
+        1160
+      ],
+      "id": "b82a2844-c5b6-4fb9-8b6b-be7d3f7064c5",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        3100,
+        980
+      ],
+      "id": "37d78a89-7db7-49fc-8772-a8eb337f4198",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "url": "https://rosiemt29.atlassian.net/rest/api/3/project/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.output.project_name }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "authorization",
+              "value": "Basic cm9zaWVtdDI5QGdtYWlsLmNvbTpBVEFUVDN4RmZHRjBnRDVnbUo5MDIwZWN4emRtZ19ycEozZmxLV3F6ZVBITXVaejB0YWZUdUhKVk1oaS1zT2xTT2tWTUN4d3VvbTM1bi1Ja2lJa182S0YyQWN2dENhSm52dWJLdWVpMHBUeGt6Y2drMXF0OENWUUQ4T0RwZzhMcmhQMnVGWVcxT214UndxYVF4eU8xRFF1c0xhaXVCeE1oSzhxWm5PQXpFZkVBeUVjTlJoTFRkVWs9RUI3MTUzNkI="
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2340,
+        480
+      ],
+      "id": "36a5975b-ffb1-45b3-a933-7be6099187a0",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "let id = $input.first().json.values[0].id;\nlet actions = $input.last().json.output.actions;\n\nlet transformedList = actions.map(item => ({\n  project_id: id,\n  description: `${item.due_date} - ${item.description} `,\n  summaries: item.summaries,\n  status:item.status,\n  due_date:item.due_date,\n  assigned_to : item.assigned_to\n}));\nreturn {transformedList};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2980,
+        480
+      ],
+      "id": "1ce03773-c8e2-4672-a6e6-a1e899ce9bc0",
+      "name": "Code2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        2660,
+        480
+      ],
+      "id": "c630b826-7054-4182-b9e2-caf9d93e3d1d",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "issueKey": "DMCPL-3",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        3000,
+        740
+      ],
+      "id": "4ca4c858-6463-4068-92f4-42b397204ed0",
+      "name": "Jira Software",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "YdvFt7v4vz7qIXDq",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rosiemt29.atlassian.net/rest/api/3/issue",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "authorization",
+              "value": "Basic cm9zaWVtdDI5QGdtYWlsLmNvbTpBVEFUVDN4RmZHRjBnRDVnbUo5MDIwZWN4emRtZ19ycEozZmxLV3F6ZVBITXVaejB0YWZUdUhKVk1oaS1zT2xTT2tWTUN4d3VvbTM1bi1Ja2lJa182S0YyQWN2dENhSm52dWJLdWVpMHBUeGt6Y2drMXF0OENWUUQ4T0RwZzhMcmhQMnVGWVcxT214UndxYVF4eU8xRFF1c0xhaXVCeE1oSzhxWm5PQXpFZkVBeUVjTlJoTFRkVWs9RUI3MTUzNkI="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"fields\": {\n    \"assignee\": {\n      \"id\": \"712020:2252e3e4-1471-49e6-8bd2-00914e2036eb\"\n    },\n    \"summary\":\"{{ $json.summaries ? $json.summaries : $json.description }}\",\n    \"duedate\": \"{{ $json.due_date }}\",\n    \"issuetype\": {\n      \"name\": \"Task\"\n    },\n    \"project\": {\n      \"id\":\"{{ $json.project_id.toString() }}\"\n    },\n    \"description\": {\n      \"content\": [\n        {\n          \"content\": [\n            {\n              \"text\": \"{{ $json.description }}\",\n              \"type\": \"text\"\n            }\n          ],\n          \"type\": \"paragraph\"\n        }\n      ],\n      \"type\": \"doc\",\n      \"version\": 1\n    },\n    \"reporter\": {\n      \"id\": \"712020:2252e3e4-1471-49e6-8bd2-00914e2036eb\"\n    }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3480,
+        1180
+      ],
+      "id": "406c2081-5fa1-422c-a68d-1cce0c9904ad",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rosiemt29.atlassian.net/rest/api/3/issue",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "authorization",
+              "value": "Basic cm9zaWVtdDI5QGdtYWlsLmNvbTpBVEFUVDN4RmZHRjBnRDVnbUo5MDIwZWN4emRtZ19ycEozZmxLV3F6ZVBITXVaejB0YWZUdUhKVk1oaS1zT2xTT2tWTUN4d3VvbTM1bi1Ja2lJa182S0YyQWN2dENhSm52dWJLdWVpMHBUeGt6Y2drMXF0OENWUUQ4T0RwZzhMcmhQMnVGWVcxT214UndxYVF4eU8xRFF1c0xhaXVCeE1oSzhxWm5PQXpFZkVBeUVjTlJoTFRkVWs9RUI3MTUzNkI="
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        3420,
+        740
+      ],
+      "id": "006497f2-bfc3-4fd0-8c54-c57a55043bee",
+      "name": "create_issue1"
+    },
+    {
+      "parameters": {
+        "project": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Project', ``, 'string') }}",
+          "mode": "id",
+          "__regex": "^([0-9]{2,})"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10113",
+          "mode": "list",
+          "cachedResultName": "Task"
+        },
+        "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}",
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.jiraTool",
+      "typeVersion": 1,
+      "position": [
+        2880,
+        760
+      ],
+      "id": "f2b930be-03b3-4b46-9c0c-58362793125b",
+      "name": "create_issue",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "YdvFt7v4vz7qIXDq",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get only the text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GOT_OCR",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DOCX to Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get only the text1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Get only the text2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Get only the text1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Get only the text2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOCX to Text": {
+      "main": [
+        [
+          {
+            "node": "Get only the text6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get only the text6": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "GOT_OCR": {
+      "main": [
+        [
+          {
+            "node": "Get only the text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "initial_report",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "follow_up_report",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_all_issues_id": {
+      "ai_tool": [
+        [
+          {
+            "node": "follow_up_report",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_issues": {
+      "ai_tool": [
+        [
+          {
+            "node": "follow_up_report",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "initial_report",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_project": {
+      "ai_tool": [
+        [
+          {
+            "node": "initial_report",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "initial_report": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "follow_up_report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_issue1": {
+      "ai_tool": [
+        [
+          {
+            "node": "follow_up_report",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_issue": {
+      "ai_tool": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d29206f4-1187-4b3d-a9a0-c5c006a7335f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eda11f78dc41be1aa2e6362cde9ae6dd4b7bbe5c2c22874197c6fa1fa408e45b"
+  },
+  "id": "EbX1jIzqTK2HJazs",
+  "tags": []
+}
