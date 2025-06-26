@@ -1,0 +1,204 @@
+{
+  "name": "PMI_ex2_Risk",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        60,
+        -400
+      ],
+      "id": "3c4c5220-8c08-4607-9075-416685d9d73b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=you are an alert agent , you will construct an email message with the result of there tests :\n\n\nif   \"NombreBugsCritiquesNonResolusDepuis48h\": {{  $json.data.filter(item => (item.json.Severity === 'Critical' && item.json.Status !== 'Resolved')&&$json.data.filter(item => ($now.diffTo(item.json['Due Date'].toDateTime(), 'hours'))>24 )&&(item.json['Due Date'].toDateTime().diffTo(item.json['Created On'].toDateTime(), 'hours'))>48 \n).length}} > 3 -> add it to the alert message.\n,\n\nif  \"VelociteDeveloppement\": {{(($json.data.filter(item => (item.json.Status === 'Closed' || item.json.Status === 'Resolved')).length )/($json.data.filter(item => (item.json.Status === 'Closed' || item.json.Status === 'Resolved')).length +($json.data.filter(item => (item.json.Status === 'Open' || item.json.Status === 'In Progress'))&&$json.data.filter(item => ($now.diffTo(item.json['Due Date'].toDateTime(), 'hours'))>24 )).length) )*100}}% >  20%  -> add it to the alert message.\n\nif  \"AvgResolutionTime\": {{($json.data.map(item => item.json['Resolution Time (hrs)']).filter(t => typeof t === 'number' && !isNaN(t)).reduce((sum, time) => sum + time, 0))/($json.data.map(item => item.json['Resolution Time (hrs)']).filter(t => typeof t === 'number' && !isNaN(t)).length) }} > 30 -> add it to the alert message.\n\nif  \"JuniorSupportLoad\": {{ $json.data.filter(i => i.json['Assigned To'] === 'Frontend Team' && i.json.Status !== 'Resolved').length + $json.data.filter(i => i.json['Assigned To'] === 'DevOps Team' && i.json.Status !== 'Resolved').length + $json.data.filter(i => i.json['Assigned To'] === 'Payment Team' && i.json.Status !== 'Resolved').length }} > 15 -> add it to the alert message.\n\nif  \"SeniorSupportLoad\": {{ $json.data.filter(i => i.json['Assigned To'] === 'Backend Dev Team' && i.json.Status !== 'Resolved').length + $json.data.filter(i => i.json['Assigned To'] === 'Infrastructure' && i.json.Status !== 'Resolved').length + $json.data.filter(i => i.json['Assigned To'] === 'Security Team' && i.json.Status !== 'Resolved').length }} > 15 -> add it to the alert message.\n\n\nconstruct in html format an email containing the resuts of the tests.\n\nreturn only the html output.\nsend it through Gmail Tool.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        780,
+        -400
+      ],
+      "id": "ca4d36cd-5c95-41e4-b515-7e5e31349b8e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        780,
+        -220
+      ],
+      "id": "efa5b26c-c722-4ba7-ba1f-edeffae10f45",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10hGpP62fkAAbXmzAqgl3z6jQZ81p1jlf8WBhHcHYE8k",
+          "mode": "list",
+          "cachedResultName": "data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10hGpP62fkAAbXmzAqgl3z6jQZ81p1jlf8WBhHcHYE8k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1987457756,
+          "mode": "list",
+          "cachedResultName": "magento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10hGpP62fkAAbXmzAqgl3z6jQZ81p1jlf8WBhHcHYE8k/edit#gid=1987457756"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        280,
+        -400
+      ],
+      "id": "34726266-c681-496e-99be-a293b33d0449",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "E8eRn70mSsC257wK",
+          "name": "Google Sheets account 6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nlet data = $input.all();\n\nreturn {data};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        -400
+      ],
+      "id": "28497771-37a6-470c-b591-e35fa0628c56",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "sendTo": "Maramtrabelsi1212@gmail.com",
+        "subject": "=🚨 Risk Test Alert",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        940,
+        -180
+      ],
+      "id": "f038e2c1-f5bc-4626-8134-5c33569f12b6",
+      "name": "Gmail1",
+      "webhookId": "6c95b39f-ffc5-4368-a848-40ec2d08dcc7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "LVLMq9zQvphbXDM9",
+          "name": "Gmail account 9"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Gmail1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "72bee10f-bcbe-4eb7-a7b4-190123a57716",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eda11f78dc41be1aa2e6362cde9ae6dd4b7bbe5c2c22874197c6fa1fa408e45b"
+  },
+  "id": "BnflIgoux6ijCVUp",
+  "tags": []
+}
