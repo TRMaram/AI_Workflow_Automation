@@ -1,0 +1,990 @@
+{
+  "name": "PMI_ex1_report_chart_generation copy",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nlet data = $input.all();\nreturn {data}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        -100
+      ],
+      "id": "a53118e3-65d6-4d76-9b8f-a0a9f4f83024",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Project Analyst AI. Your task is to analyze structured weekly bug report data from an e-commerce project and generate a professional HTML report. \n\n\n🎯 Objectives:\nGenerate a comprehensive weekly report. Organize the report into the following structured sections :\n\n* Bugs Critiques Résolus :\n{{  $json.data.filter(item => (item.json.Severity === 'Critical' || item.json.Severity === 'Major'  ) && (item.json.Status == \"Resolved\" || item.json.Status === 'Closed')).toJsonString()}}\n-> format the data into a detailed table with these columns : ID, Title , Severity, Status, Resolved On, Resolution Time (hrs). -> output the totality of the result, all the rows.\n\n * Avancée du Développement (using detailed table){{ $json.data.toJsonString() }} \n--> fill this table reasonably with these columns : ID, Title , Severity, Status, Resolved On, Resolution Time (hrs). \n--> output all the rows.\n\n* BUGS Critical blocked (using detailed table ):\n{{  $json.data.filter(item => (item.json.Severity === 'Critical' || item.json.Severity === 'Major'  || item.json.Severity === 'High' ) && (item.json.Status == \"In Progress\" || item.json.Status === 'Open')&&( item.json.Blocked === 'Yes')).toJsonString()}}\n-> format the data into a detailed table with these columns : ID, Title, Severity, Status, Blocked.  -> output the totality of the result, all the rows.\n* Charge Support (using detailed table):\n{{  $json.data.filter(item => (item.json.Source === 'Customer Support' || item.json['Submitted By'] === 'Support Team'  ) && (item.json.Status == \"In Progress\" || item.json.Status === 'Open') ).toJsonString()}}\n -> format the data into a detailed table with these columns : ID, Title, Source, Submitted By, Status .  -> output the totality of the result, all the rows.\n\n📊 Key Metrics (Include Embedded Charts):\ndata_input: \n{{ $json.data.toJsonString() }}\n1- Use the HTTP Request node to generate various types of charts (e.g., bar, pie, line) for maximum insight.\n2- Each chart should be embedded directly in the HTML report at the relevant section.\n3- analyze and filter the data_input JSON (an array of structured bug records) and prepare datasets for the following charts. Apply the required filters and aggregations to calculate each metric accurately.(use the calculator tool when needed)\n4- Chart Types & Purposes:\n* Total Bugs vs Resolved (Bar Chart):\n  -Count all bugs\n  -Count bugs with Status in [\"Resolved\", \"Closed\"]\n  -Return both counts\n* Bugs by Status (Pie Chart)\n  -Group bugs by Status\n  -Count how many bugs are in each of the statuses of the data_input (e.g. Open,In Progress,Resolved,Closed,Backlog)\n* Weekly Bug Resolution Trend (Line Chart)\n  -Group bugs by week of their Resolved On date\n  -Count how many bugs were resolved each week\n  -Use week labels like \"2025-W23\", \"2025-W24\", etc.\n* Bug Distribution by Assigned To (Doughnut Chart)\n  -Group bugs by team based on Assigned To\n  -Count how many bugs were assigned to each team \n  -Assume you can identify teams from the name.\n* Bug Types (Horizontal Bar Chart)\n  -Group bugs by Type (e.g., UI, Backend, Payment, Sync)\n\nCount occurrences of each type\n\nHTTP Request Body Format:\n\n{\n  \"chart\": {\n    \"type\": \"chart_type_here\",\n    \"data\": {\n      \"labels\": [\"Label1\", \"Label2\"],\n      \"datasets\": [\n        {\n          \"label\": \"Dataset Label\",\n          \"data\": [10, 20]\n        }\n      ]\n    }\n  }\n}\nReplace \"chart_type_here\" with the appropriate type (e.g., \"bar\", \"pie\", \"line\"), and dynamically fill in labels and datasets based on the analysis.\n\n\n\n📈 Trends & Insights:\nAnalyze the input data to extract insights such as:\n\nAre bug counts increasing or decreasing compared to last week?\n(If historical data is unavailable, comment on resolution progress.)\n\nIdentify common bug types (e.g., payment, UI, sync issues)\n\nWhich team resolved more bugs?\n\nAre Product Manager requests being addressed effectively?\n\n🧩 Milestones & Highlights:\nHighlight critical bugs resolved this week and their business impact\n\nFlag any ongoing blockers or high-impact open issues\n\nNote improvements in feature stability or customer experience\n\n📌 Suggested Focus for Next Week:\nRecommend areas that require more attention (e.g., payment flow, performance)\n\nSuggest bug priorities based on:\n\n📊 Frequency\n\n💼 Business Impact\n\n⏱️ Stakeholder Urgency\n\n✍️ Formatting Guidelines:\nOutput a clean, readable HTML report\n\nUse clear section headers, bullet points, tables, and embedded charts\n\nMaintain a professional, concise tone suitable for both executives and technical teams\n\nBegin the report with a well-written Executive Summary\n\n📄 Output Instructions:\nReturn only the fully formatted HTML report.\n",
+        "options": {
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -80,
+        -100
+      ],
+      "id": "af45dc8e-819e-439f-906a-524e44b0d361",
+      "name": "AI Agent1",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "sendTo": "maramtrabelsi1212@gmail.com",
+        "subject": "Report",
+        "message": "={{ $('HTML').item.json.html }}{{ $json.Files[0].Url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2120,
+        -180
+      ],
+      "id": "f11e7745-e199-4a02-b1fb-79f99e239275",
+      "name": "Gmail",
+      "webhookId": "d850056f-26df-49b3-a301-a59800a30a31",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "LVLMq9zQvphbXDM9",
+          "name": "Gmail account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://quickchart.io/chart/create",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -40,
+        120
+      ],
+      "id": "b0724f96-ebdf-4367-b82f-d8405528279e",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -700,
+        -100
+      ],
+      "id": "81f25df7-9611-42ac-b90e-38825f13a7ae",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1MxEYi96HqUJeYS2DXAqt3DPmQ9_SiX-b0C5IeBkHn5A",
+          "mode": "list",
+          "cachedResultName": "sheets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MxEYi96HqUJeYS2DXAqt3DPmQ9_SiX-b0C5IeBkHn5A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2007105359,
+          "mode": "list",
+          "cachedResultName": "Feuille 26",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MxEYi96HqUJeYS2DXAqt3DPmQ9_SiX-b0C5IeBkHn5A/edit#gid=2007105359"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -480,
+        -100
+      ],
+      "id": "55137d8d-a842-4a17-950c-86502a27c43a",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ShvxBmHXifLGOSFi",
+          "name": "Google Sheets account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://v2.convertapi.com/convert/html/to/pdf",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer PkRk3XkwSeRy8t2ltaBjBhqnzCZtkmVx"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "StoreFile",
+              "value": "true"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "File",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1940,
+        -180
+      ],
+      "id": "25e5fa5b-1be0-44b9-9378-e760c38f734e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "let file1 = JSON.parse($input.first().json.output);\nlet html1 = file1[\"Corrected HTML Report\"];\n\nreturn {html1};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        -180
+      ],
+      "id": "62fca1e2-c5bf-4d1c-9f6a-f1ce8e109b1f",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "html": "{{ $json.html1 || $json.hmtlf }}"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1500,
+        -180
+      ],
+      "id": "acc5e61d-bb27-4547-af91-0677b80ccf6a",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "mode": "jsonToBinary",
+        "convertAllData": false,
+        "sourceKey": "html",
+        "options": {
+          "fileName": "index.html",
+          "mimeType": "text/html",
+          "useRawData": true
+        }
+      },
+      "id": "9130bbb7-64de-47bc-bc91-12f653c8c896",
+      "name": "Move Binary Data",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "typeVersion": 1,
+      "position": [
+        1700,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        120
+      ],
+      "id": "4ed9f123-167a-424f-b477-59577543af99",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 3,
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        380,
+        -100
+      ],
+      "id": "c4f199c7-8bb7-46eb-bd54-6e1d861125cf",
+      "name": "Loop Over Items1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8e967d8c-cb23-40cb-aa99-bd8c1a8840cf",
+              "leftValue": "={{ $json.output.parseJson()['Validation Verdict'] }}",
+              "rightValue": "Invalid",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1020,
+        -60
+      ],
+      "id": "7a7d992e-426f-465f-9c8b-ef0d334fa79c",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "content": "## Controle agent"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        620,
+        -180
+      ],
+      "typeVersion": 1,
+      "id": "4f7eba48-50a3-4bf7-b6e5-a11632a1520b",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Validation & Correction AI Agent. Your task is to validate an HTML weekly project report against the original structured input JSON data by verifying that each report section accurately reflects the filtered data defined below, then fix the report if needed.\n\nInputs:\noriginal_input: {{ $('Code').item.json.data.toJsonString() }}\n\nhtml_output: {{ $json.output }}\n\nValidation Sections and Filters:\nBugs Critiques Résolus:\n→ Report must include a detailed table with all these bugs: {{  $('Code').item.json.data.filter(item => (item.json.Severity === 'Critical' || item.json.Severity === 'Major'  ) && (item.json.Status == \"Resolved\" || item.json.Status === 'Closed')).toJsonString()}}\n\nAvancée du Développement:\nAll bug records (no filter)\n→ Report should reasonably reflect progress status.\n\nBUGS Critical Blocked:\n→ Report must include a table with all these bugs: {{  $('Code').item.json.data.filter(item => (item.json.Severity === 'Critical' || item.json.Severity === 'Major'  || item.json.Severity === 'High' ) && (item.json.Status == \"In Progress\" || item.json.Status === 'Open')&&( item.json.Blocked === 'Yes')).toJsonString()}}.\n\nCharge Support:\n→ Report must include a table with these support-related bugs: {{  $('Code').item.json.data.filter(item => (item.json.Source === 'Customer Support' || item.json['Submitted By'] === 'Support Team'  ) && (item.json.Status == \"In Progress\" || item.json.Status === 'Open') ).toJsonString()}}\n\nKey Metrics:\nReport must include embedded charts based on aggregated data (e.g., bug counts by status, resolution trends) consistent with the input data.\n\nTrends & Insights:\nSummary analysis consistent with bug trends and counts derived from original_input.\n\nMilestones & Highlights:\nHighlights of resolved critical bugs and blockers as per filtered data.\n\nSuggested Focus for Next Week:\nRecommendations based on frequency, impact, and urgency derived from input data.\n\nValidation Rules:\nMark the report Invalid if 3 or more of the above sections are missing entirely or do not reflect the filtered data accurately (e.g., missing critical bugs, contradictory claims about bug counts).\n\nMark Invalid if charts in Key Metrics are missing.\n\nMark Invalid if contradictions exist, such as claiming “no bugs” when filtered data shows bugs.\n\nDo not mark Invalid for minor formatting issues, partial data omissions, or light content.\n\nAuto-Correction:\n- If Invalid, generate a corrected HTML report that:\n\n   Adds or fixes missing sections using the exact filtered data above.\n\n  Corrects contradictory statements to match filtered bug counts and statuses.\n\nEmbeds at least one accurate chart in the Key Metrics section as an <img> tag.\n\nOutput format:\nIf Valid:\n\n\n{\n  \"Validation Verdict\": \"Valid\",\n  \"Issues Found\": [],\n  \"Suggested Fixes\": [],\n  \"Corrected HTML Report\": \"{{ $json.output }}\"\n}\nIf Invalid:\n\n\n{\n  \"Validation Verdict\": \"Invalid\",\n  \"Issues Found\": [\"List of missing or inaccurate sections based on filters\"],\n  \"Suggested Fixes\": [\"Add/fix sections using filtered data, correct contradictions, add charts\"],\n  \"Corrected HTML Report\": \"Corrected full HTML report with all sections and charts\"\n}",
+        "options": {
+          "systemMessage": "=You are a Validation & Correction AI Agent. Your task is to validate an HTML weekly project report against the original structured input JSON data by verifying that each report section accurately reflects the filtered data defined below, then fix the report if needed.\n\nInputs:\noriginal_input: {{ $('Code').item.json.data.toJsonString() }}\n\nhtml_output: {{ $json.output }}\n\nValidation Sections and Filters:\nBugs Critiques Résolus:\n→ Report must include a detailed table with all these bugs: {{  $('Code').item.json.data.filter(item => (item.json.Severity === 'Critical' || item.json.Severity === 'Major'  ) && (item.json.Status == \"Resolved\" || item.json.Status === 'Closed')).toJsonString()}}\n\nAvancée du Développement:\nAll bug records (no filter)\n→ Report should reasonably reflect progress status.\n\nBUGS Critical Blocked:\n→ Report must include a table with all these bugs: {{  $('Code').item.json.data.filter(item => (item.json.Severity === 'Critical' || item.json.Severity === 'Major'  || item.json.Severity === 'High' ) && (item.json.Status == \"In Progress\" || item.json.Status === 'Open')&&( item.json.Blocked === 'Yes')).toJsonString()}}.\n\nCharge Support:\n→ Report must include a table with these support-related bugs: {{  $('Code').item.json.data.filter(item => (item.json.Source === 'Customer Support' || item.json['Submitted By'] === 'Support Team'  ) && (item.json.Status == \"In Progress\" || item.json.Status === 'Open') ).toJsonString()}}\n\nKey Metrics:\nReport must include embedded charts based on aggregated data (e.g., bug counts by status, resolution trends) consistent with the input data.\n\nTrends & Insights:\nSummary analysis consistent with bug trends and counts derived from original_input.\n\nMilestones & Highlights:\nHighlights of resolved critical bugs and blockers as per filtered data.\n\nSuggested Focus for Next Week:\nRecommendations based on frequency, impact, and urgency derived from input data.\n\nValidation Rules:\nMark the report Invalid if 3 or more of the above sections are missing entirely or do not reflect the filtered data accurately (e.g., missing critical bugs, contradictory claims about bug counts).\n\nMark Invalid if charts in Key Metrics are missing.\n\nMark Invalid if contradictions exist, such as claiming “no bugs” when filtered data shows bugs.\n\nDo not mark Invalid for minor formatting issues, partial data omissions, or light content.\n\nAuto-Correction:\n- If Invalid, generate a corrected HTML report that:\n\n   Adds or fixes missing sections using the exact filtered data above.\n\n  Corrects contradictory statements to match filtered bug counts and statuses.\n\nEmbeds at least one accurate chart in the Key Metrics section as an <img> tag.\n\nOutput format:\nIf Valid:\n\n\n{\n  \"Validation Verdict\": \"Valid\",\n  \"Issues Found\": [],\n  \"Suggested Fixes\": [],\n  \"Corrected HTML Report\": \"{{ $json.output }}\"\n}\nIf Invalid:\n\n\n{\n  \"Validation Verdict\": \"Invalid\",\n  \"Issues Found\": [\"List of missing or inaccurate sections based on filters\"],\n  \"Suggested Fixes\": [\"Add/fix sections using filtered data, correct contradictions, add charts\"],\n  \"Corrected HTML Report\": \"Corrected full HTML report with all sections and charts\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        660,
+        -80
+      ],
+      "id": "fe1c69a2-b221-4a43-9738-4c6d496bcb85",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        500,
+        160
+      ],
+      "id": "e746975b-a8b1-47e4-baa0-6842b11ed90b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## agent for chatbot  ",
+        "height": 740,
+        "width": 1720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -440,
+        -1340
+      ],
+      "typeVersion": 1,
+      "id": "93aee1e5-bc18-4276-8fa8-494b5553bc66",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "sendTo": "maramtrabelsi1212@gmail.com",
+        "subject": "Report",
+        "message": "={{ $('HTML1').item.json.html }}{{ $json.Files[0].Url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2100,
+        40
+      ],
+      "id": "895be4ec-89cb-48be-a4b7-09e643c6b2ab",
+      "name": "Gmail1",
+      "webhookId": "0a3df3c7-4263-4987-97f0-210c165f95e4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "LVLMq9zQvphbXDM9",
+          "name": "Gmail account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://v2.convertapi.com/convert/html/to/pdf",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer PkRk3XkwSeRy8t2ltaBjBhqnzCZtkmVx"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "StoreFile",
+              "value": "true"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "File",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1940,
+        40
+      ],
+      "id": "4bd2c12b-3804-4af3-a528-248cb4948449",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "jsCode": "let file = $('AI Agent1').first().json.output.replaceAll(\"```html\",\"\").replaceAll(\"```\",\"\").replaceAll(\"\\n\",\"\");\n\nreturn {file};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        40
+      ],
+      "id": "db0b8702-6eac-4e95-a1ea-ae63a52194bc",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "html": "{{ $json.file }}"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1500,
+        40
+      ],
+      "id": "6a9c0665-e4b9-45e9-b314-c5f18f4e1ea9",
+      "name": "HTML1"
+    },
+    {
+      "parameters": {
+        "mode": "jsonToBinary",
+        "convertAllData": false,
+        "sourceKey": "html",
+        "options": {
+          "fileName": "index.html",
+          "mimeType": "text/html",
+          "useRawData": true
+        }
+      },
+      "id": "5828df0b-84e9-4679-aaff-b31494796bd7",
+      "name": "Move Binary Data1",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "typeVersion": 1,
+      "position": [
+        1700,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 660,
+        "width": 3160,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -780,
+        -300
+      ],
+      "typeVersion": 1,
+      "id": "97329242-71ad-4f2e-a04a-1603d9abbc61",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        -1120
+      ],
+      "id": "e2add820-fe36-4efd-911b-962a1eff0854",
+      "name": "When chat message received",
+      "webhookId": "f5411a61-2a6c-45f4-94f0-ae5c767ab099"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a9a245e-f1a1-4282-bb02-a81ffe629f0f",
+              "name": "chatInput",
+              "value": "={{ $json.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "b80831d8-c653-4203-8706-adedfdb98f77",
+              "name": "sessionId",
+              "value": "={{ $json.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bce9fb71-01b6-4a27-82ac-cbd9ddb1ef40",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        60,
+        -1120
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "=- Role Overview\nYou are the Project Analyst AI Agent, embedded in a business intelligence workflow. Your job is to guide the user step by step to create a custom chart from the data. You will:\n- data_source : call the data tool supabase.\n\nRead the data structure from the data_source.\n\nAsk the user to define which data they want to visualize.\n\nGuide the user in choosing the type of chart.\n\nHelp customize the appearance of the chart.\n\nGenerate the chart via AGENT TOOL QuickChart.\n\nProvide the equivalent Python code for local reproduction.\n\n🧠 General Flow Logic\nGreeting: Begin with a polite introduction and let the user know you're here to help visualize data from Data source.\n\nMemory-Based Flow Control: Use session memory (session.get(\"step\")) to persist progress between user inputs.\n\nAvoid Restarts unless the user explicitly says \"restart\" or asks to start a new chart.\n\n🔁 Step-by-Step Flow & Prompts\nSTEP 1: Welcome\n\nShow Available Columns\n-> display available columns (headers) from the data_source.\n\nPrompt:\n\n\nHello! 👋 I’m your Project Analyst AI. I can help you build charts from your Data Source.\n\nLet’s get started. 📊\n\nHere are the available columns in your Data Source:  \n[display headers here]\n\nSTEP 2: Chart Request Analysis\n\nUser describes what chart they want (e.g., \"show me sales by region\", \"create a pie chart of bug categories\")\n\nAnalyze their request to identify:\n\nChart type (explicit or inferred from request)\nLabel column (x-axis, categories, slices)\nData column (y-axis, values, measurements)\nCustomization preferences (title, colors, etc.)\n\nsave config data.\n\nSTEP 3: Complete Missing Information\n\nIf any critical information is missing, ask for it in a single, natural question\nExamples:\n\n\"I can create that sales chart for you. Which column should I use for the sales values - 'Revenue' or 'Units Sold'?\"\n\"For your pie chart, should I use 'Bug Count' or 'Priority Level' for the slice sizes?\"\n\n\nOnce all information is gathered, save config data then proceed directly to chart generation\n\nSTEP 4: Generate Chart\n- construct an SQL query (mysql query) based on the user query, data table name is \"bug_reports\".\n-> [send sql query to mysql tool as query string]\n\n- Display the results of the filtering and calculations.\n- Save config.\n- Use saved config and all collected information for the chart to construct a json QuickChart payload.\nHTTP Request Body Format:\n\nQuickChart JSON Format:\n{\n  \"chart\": {\n    \"type\": \"bar|line|pie|doughnut|horizontalBar|radar\",\n    \"data\": {\n      \"labels\": [\"Label1\", \"Label2\"],\n      \"datasets\": [{\n        \"label\": \"Dataset Name\",\n        \"data\": [10, 20, 30],\n        \"backgroundColor\": [\"#2196F3\", \"#4CAF50\", \"#FF9800\"]\n      }]\n    },\n    \"options\": {\n      \"responsive\": true,\n      \"plugins\": {\n        \"title\": {\n          \"display\": true,\n          \"text\": \"Chart Title\"\n        }\n      }\n    }\n  }\n}\n\nReplace \"chart_type_here\" with the appropriate type (e.g., \"bar\", \"pie\", \"line\"),and fill in labels and data and datasets based on saved config data and all collected information.\n\n-> Render the chart using the TOOL QuickChart.\n\n-> Display the chart.\n\n\nPrompt:\n\nHere is your chart! 🎉\n\n\nStep 5 : Python Chart Code generation\nWould you like me to generate a **Python script** to create this chart offline?\n→ session.set(\"step\", \"WAITING_FOR_PYTHON_REQUEST\")\n\nWAITING_FOR_PYTHON_REQUEST\nIf user says yes:\n\nGenerate and show Python code:\n1- connects to mysql database using these params : \nhost: localhost,\ndatabase: faces,\nuser: root,\npassword: \"\",\n2- send sql query to retrieve data from a table called bug_reports.\n3- use plotly and saved config and chart data.\n\n\nhere is an example script : \n\"\nimport mysql.connector\nimport plotly.express as px\nimport pandas as pd\n\n# Connect to the MySQL database\ndb_connection = mysql.connector.connect(\n    host=\"localhost\",\n    database=\"faces\",\n    user=\"root\",\n    password=\"\"\n)\n\n# Query to retrieve data from the bug_reports table\nquery = \"SELECT Status, COUNT(*) as Count FROM bug_reports GROUP BY Status\"\n\n# Load data into a pandas DataFrame\ndata = pd.read_sql(query, con=db_connection)\n\n# Create the doughnut chart\nfig = px.pie(data, values='Count', names='Status', title='Bug Status Distribution', hole=0.4)\n\n# Show the chart\nfig.show()\n\n# Close the database connection\ndb_connection.close() \"\n\n→ save python generated script, call the execute_script tool and send the script as a string.\n→ session.set(\"step\", \"COMPLETE\")\n\nIf user says no:\nPrompt:\n\n\nOkay! You're all set. If you'd like to build another chart, just type **restart**.\n→ session.set(\"step\", \"COMPLETE\")\n\nIf user input unclear:\nPrompt:\n\nPlease type **yes** or **no** if you want Python code.\nCOMPLETE\nIf user says \"restart\":\n→ session.set(\"step\", \"STEP_2\")\nPrompt:\nStarting over!\n\nOtherwise:\nPrompt:\n\nLet me know if you want to create another chart. Just type **restart** anytime.\n✅ Final Output (Example)\n🖼️ QuickChart Rendered Output\n\n"
+        }
+      },
+      "id": "997c815a-582b-46db-ae0b-b44fb381df1a",
+      "name": "RAG AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        280,
+        -1180
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini-2024-07-18",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini-2024-07-18"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        140,
+        -900
+      ],
+      "id": "6e202a2c-6fa0-4e40-8e8b-1eef9f0ff967",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://quickchart.io/chart/create",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        -920
+      ],
+      "id": "0b55ec95-d9b7-444c-8e41-517181df95af",
+      "name": "Quickchart1"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        360,
+        -900
+      ],
+      "id": "d81da252-a04c-4b4e-8820-e8f50b7ec5c8",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "data"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        780,
+        -920
+      ],
+      "id": "6d14b6fc-2c50-402f-8247-89db9aa7557a",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('Query_Parameters', ``, 'string') }}",
+        "options": {
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.mySqlTool",
+      "typeVersion": 2.4,
+      "position": [
+        660,
+        -920
+      ],
+      "id": "6ad4c3c5-5370-429b-892e-9f59f72a03b4",
+      "name": "MySQL",
+      "credentials": {
+        "mySql": {
+          "id": "gcMCIMgM5owhx3wW",
+          "name": "MySQL account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool  to retrieve the data.",
+        "workflowId": {
+          "__rl": true,
+          "value": "zSm7498VuiAXtxFT",
+          "mode": "list",
+          "cachedResultName": "My Sub-Workflow 1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "data": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        900,
+        -920
+      ],
+      "id": "442c9b97-67d8-44d2-8886-02302380c44b",
+      "name": "execute_script"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Move Binary Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move Binary Data": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "HTML1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML1": {
+      "main": [
+        [
+          {
+            "node": "Move Binary Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move Binary Data1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quickchart1": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MySQL": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "execute_script": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4110d96b-b7bb-4319-874b-a408398b76bb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eda11f78dc41be1aa2e6362cde9ae6dd4b7bbe5c2c22874197c6fa1fa408e45b"
+  },
+  "id": "vOLmf7O5awVvToZS",
+  "tags": []
+}
