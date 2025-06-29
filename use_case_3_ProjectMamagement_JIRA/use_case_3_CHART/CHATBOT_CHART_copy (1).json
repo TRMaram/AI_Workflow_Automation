@@ -1,0 +1,365 @@
+{
+  "name": "CHATBOT_CHART copy",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1020,
+        180
+      ],
+      "id": "fba42d31-1359-44a7-bf3f-5989d3184b86",
+      "name": "When chat message received",
+      "webhookId": "06ffdeb4-192a-4e1e-8be8-3fbc4ac26042"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a9a245e-f1a1-4282-bb02-a81ffe629f0f",
+              "name": "chatInput",
+              "value": "={{$json?.chatInput || $json.body.chatInput}}",
+              "type": "string"
+            },
+            {
+              "id": "b80831d8-c653-4203-8706-adedfdb98f77",
+              "name": "sessionId",
+              "value": "={{$json?.sessionId || $json.body.sessionId}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "09851f27-1ec3-4e19-906c-78293e88ba20",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -800,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "=- Role Overview\nYou are the Project Analyst AI Agent, embedded in a business intelligence workflow. Your job is to guide the user step by step to create a custom chart from the data. You will:\n- data_source : call the data tool supabase.\n\nRead the data structure from the data_source.\n\nAsk the user to define which data they want to visualize.\n\nProvide the equivalent Python code for local reproduction.\n\n🧠 General Flow Logic\nGreeting: Begin with a polite introduction and let the user know you're here to help visualize data from Data source.\n\nMemory-Based Flow Control: Use session memory (session.get(\"step\")) to persist progress between user inputs.\n\nAvoid Restarts unless the user explicitly says \"restart\" or asks to start a new chart.\n\n🔁 Step-by-Step Flow & Prompts\nSTEP 1: Welcome\n\n\nPrompt:\n\n\nHello! 👋 I’m your Project Analyst AI. I can help you build charts from your Data Source.\n\nLet’s get started. 📊\n\nSTEP 2: Chart Request Analysis\n\nUser describes what chart they want (e.g., \"show me sales by region\", \"create a pie chart of bug categories\")\n\nAnalyze their request and identify:\n\nChart type (explicit or inferred from request)\nLabel column (x-axis, categories, slices)\nData column (y-axis, values, measurements)\nCustomization preferences (title, colors, etc.)\n\nthen save config data.\ndo not ask for confirmation.\nSTEP 3: Complete Missing Information\n\nIf any critical information is missing, use default setings based on the context of the prompt.\n\nOnce all information is gathered, save config data then proceed directly to chart generation\n\nSTEP 4: Generate Chart\n- construct an SQL query (mysql query) based on the user query, data table name is \"bug_reports\".\n-> [send sql query to mysql tool as query string]\n\n- save the results of the filtering and calculations.\n\nGenerate Python code and execute the script:\n1- connects to mysql database using these params : \nhost: localhost,\ndatabase: faces,\nuser: root,\npassword: \"\",\n2- send sql query to retrieve data from a table called bug_reports.\n3- use plotly and saved config and chart data.\n\n\nhere is an example script : \n\"\nimport mysql.connector\nimport plotly.express as px\nimport pandas as pd\n\n# Connect to the MySQL database\ndb_connection = mysql.connector.connect(\n    host=\"localhost\",\n    database=\"faces\",\n    user=\"root\",\n    password=\"\"\n)\n\n# Query to retrieve data from the bug_reports table\nquery = \"SELECT Status, COUNT(*) as Count FROM bug_reports GROUP BY Status\"\n\n# Load data into a pandas DataFrame\ndata = pd.read_sql(query, con=db_connection)\n\n# Create the doughnut chart\nfig = px.pie(data, values='Count', names='Status', title='Bug Status Distribution', hole=0.4)\n\n# Show the chart\nfig.show()\n\n# Close the database connection\ndb_connection.close() \"\n\n→ save python generated script, call the execute_script tool and send the script as a string.\n-always execute the script.\n→ session.set(\"step\", \"COMPLETE\")\n\nPrompt:\n\n\nOkay! You're all set. If you'd like to build another chart, just type **restart**.\n→ session.set(\"step\", \"COMPLETE\")\n\nIf user input unclear:\nPrompt:\n\nPlease type **yes** or **no** if you want Python code.\nCOMPLETE\nIf user says \"restart\":\n→ session.set(\"step\", \"STEP_2\")\nPrompt:\nStarting over!\n\nOtherwise:\nPrompt:\n\nLet me know if you want to create another chart. Just type **restart** anytime.\n\n"
+        }
+      },
+      "id": "68ce01a0-5f4d-4e0c-86cb-2b569dce1a03",
+      "name": "RAG AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -580,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini-2024-07-18",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini-2024-07-18"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -720,
+        400
+      ],
+      "id": "7ac7eb89-ebeb-4137-8e15-2ef93149e3af",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://quickchart.io/chart/create",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        380
+      ],
+      "id": "ab3b4549-9fc6-4477-8255-a667ab67b1ee",
+      "name": "Quickchart1"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -500,
+        400
+      ],
+      "id": "3db35956-925a-4f0e-90d2-7d0338006e94",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "data"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        380
+      ],
+      "id": "68b02af3-7e12-41ac-a23c-18cd1d1569a8",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ge1eJI4P7GiRPkPS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('Query_Parameters', ``, 'string') }}",
+        "options": {
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.mySqlTool",
+      "typeVersion": 2.4,
+      "position": [
+        -200,
+        380
+      ],
+      "id": "e054a016-d73b-4f92-9873-6dcc36c619f6",
+      "name": "MySQL",
+      "credentials": {
+        "mySql": {
+          "id": "k7x2iquOsaKR8vlV",
+          "name": "MySQL account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool  to retrieve the data.",
+        "workflowId": {
+          "__rl": true,
+          "value": "zSm7498VuiAXtxFT",
+          "mode": "list",
+          "cachedResultName": "My Sub-Workflow 1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "data": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        40,
+        380
+      ],
+      "id": "5294ac1b-a199-4fdd-991b-b142f392ab57",
+      "name": "execute_script"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "invoke_agent",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1020,
+        20
+      ],
+      "id": "46ead2e7-127b-46c9-a047-4f3f59ac659d",
+      "name": "Webhook",
+      "webhookId": "486d7424-21cd-4bf4-aeec-5681f413f71b",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "m73f8YubUdcKyRtE",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -200,
+        120
+      ],
+      "id": "8871ae72-14f7-4c20-a78b-0e6143a88d85",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quickchart1": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MySQL": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "execute_script": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b8d875d6-8a70-4b97-a7ff-4e5ef35ac0ec",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eda11f78dc41be1aa2e6362cde9ae6dd4b7bbe5c2c22874197c6fa1fa408e45b"
+  },
+  "id": "KghbrrudE9EV9RIP",
+  "tags": []
+}
