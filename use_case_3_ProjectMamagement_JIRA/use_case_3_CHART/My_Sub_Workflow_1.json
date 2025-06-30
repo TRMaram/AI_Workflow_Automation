@@ -1,0 +1,115 @@
+{
+  "name": "My Sub-Workflow 1",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "data"
+            }
+          ]
+        }
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        260,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=C:\\Users\\LENOVO\\OneDrive - Private Higher School of Technologies & Engineering (TEKUP)\\Bureau\\stage_ete\\data.py",
+        "dataPropertyName": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        640,
+        340
+      ],
+      "id": "b52efb69-ac86-4c38-b008-428a4b0b49ac",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        460,
+        340
+      ],
+      "id": "48fe6caf-a811-48d0-b1c3-b80f19632363",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "command": "python \"C:\\Users\\LENOVO\\OneDrive - Private Higher School of Technologies & Engineering (TEKUP)\\Bureau\\stage_ete\\data.py\"\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        860,
+        340
+      ],
+      "id": "9d9ddb36-2918-41c7-a31f-ce72ee3032ff",
+      "name": "Execute Command"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a6facc51-e824-4db9-a81f-4f58c8d072b5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eda11f78dc41be1aa2e6362cde9ae6dd4b7bbe5c2c22874197c6fa1fa408e45b"
+  },
+  "id": "zSm7498VuiAXtxFT",
+  "tags": []
+}
