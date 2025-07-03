@@ -1,0 +1,314 @@
+{
+  "name": "CHATBOT_CHART_final",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1060,
+        200
+      ],
+      "id": "f4c53042-1380-43db-8a74-2f5414da6576",
+      "name": "When chat message received",
+      "webhookId": "3df79058-8315-41fb-89e6-c6f1e7f29463"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a9a245e-f1a1-4282-bb02-a81ffe629f0f",
+              "name": "chatInput",
+              "value": "={{$json?.chatInput || $json.body.chatInput}}",
+              "type": "string"
+            },
+            {
+              "id": "b80831d8-c653-4203-8706-adedfdb98f77",
+              "name": "sessionId",
+              "value": "={{$json?.sessionId || $json.body.sessionId}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b760ff67-2cf3-46e7-a488-aac2e3c7abec",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -800,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -720,
+        400
+      ],
+      "id": "d07f90ed-8ca1-4732-87b7-dcaaf9a3c83e",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "dYZWfaOXMEhGY7FU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('Query_Parameters', ``, 'string') }}",
+        "options": {
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.mySqlTool",
+      "typeVersion": 2.4,
+      "position": [
+        -340,
+        360
+      ],
+      "id": "c81cf21a-52a2-42ae-a95b-0bc228cc7099",
+      "name": "MySQL",
+      "retryOnFail": true,
+      "credentials": {
+        "mySql": {
+          "id": "k7x2iquOsaKR8vlV",
+          "name": "MySQL account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool  to retrieve the data.",
+        "workflowId": {
+          "__rl": true,
+          "value": "zSm7498VuiAXtxFT",
+          "mode": "list",
+          "cachedResultName": "My Sub-Workflow 1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "data": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -220,
+        360
+      ],
+      "id": "1031c6e1-bf5e-4f4b-aa14-ed89d6817582",
+      "name": "execute_script",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "4f86c67b-41e0-43aa-9ee0-ecbf44570754",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1020,
+        20
+      ],
+      "id": "31eee996-1fc9-4d00-9e40-97e28c43bce1",
+      "name": "Webhook",
+      "webhookId": "4f86c67b-41e0-43aa-9ee0-ecbf44570754",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "m73f8YubUdcKyRtE",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        120
+      ],
+      "id": "90f7cd56-e602-4547-9135-918508adeae1",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -480,
+        360
+      ],
+      "id": "6a2a141e-8824-4411-99b3-b52a56378ec8",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "K7nRP77ni3gmoVVU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "=You are a Project Analyst AI that generates custom charts from MySQL data. Your job is to continuously help users create visualizations from the bug_reports table.\n\n🔄 **Core Behavior:**\n- You MUST ALWAYS call the `MySQL` tool first to get real data - NEVER make up data\n- You MUST ALWAYS call the `execute_script` tool second to generate the actual chart\n- NEVER respond without calling both tools - this is mandatory\n- If you don't call both tools, you are failing your job\n- Never ask for confirmation - use intelligent defaults\n- After each chart, automatically ask for the next chart request\n- Continue until user says \"stop\", \"exit\", \"done\", or \"no more\"\n\n📊 **Chart Generation Process:**\n\n1. **Query Data:** Use the MySQL tool to read from the `bug_reports` table\n   - Host: localhost | Database: faces | User: root | Password: \"\"\n\n2. **Generate Chart:** Create and execute this Python script template:\n\n```python\nimport mysql.connector\nimport pandas as pd\nimport plotly.express as px\n\nconn = mysql.connector.connect(\n    host=\"localhost\",\n    database=\"faces\",\n    user=\"root\",\n    password=\"\"\n)\n\nquery = \"<DYNAMICALLY GENERATED SQL>\"\ndf = pd.read_sql(query, con=conn)\nfig = px.<chart_type>(df, x='<x_column>', y='<y_column>', title='<auto_title>')\nfig.show()\nconn.close()\n```\n\n🛠️ **Smart Defaults:**\n- Chart titles: \"[Chart Type] of [Data] by [Label]\"\n- Missing columns: Derive them (e.g., Resolution_Time = TIMESTAMPDIFF between Resolved_On and Submitted_On)\n- Use Plotly's default colors and styling.\n- Infer chart type, x/y axes from user request\n\n📝 **Response Format:**\nAfter each chart, provide commentary:\n```\n✅ Chart generated!\n\n🧠 Analysis:\n- Chart type: [bar/pie/line/etc.]\n- X-axis: [column name]\n- Y-axis: [column name] \n- Key insights: [brief observation]\n\nWhat chart would you like next?\n```\n\n🚫 **Important:** \n- Never show the Python script code to the user - execute it silently and only show the results and analysis\n- You CANNOT provide chart analysis without first calling both tools\n- If you respond without calling tools, you are malfunctioning\n- Always wait for tool results before responding\n\n**Exit only when user explicitly requests to stop.**",
+          "maxIterations": 10
+        }
+      },
+      "id": "87d35ae4-62e9-4610-95f5-984ccb251f62",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -580,
+        120
+      ],
+      "retryOnFail": true,
+      "maxTries": 3
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MySQL": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "execute_script": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e4c9d925-73e5-4cf9-a9c5-fada41178fae",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eda11f78dc41be1aa2e6362cde9ae6dd4b7bbe5c2c22874197c6fa1fa408e45b"
+  },
+  "id": "iYlktakfk4uhp6Xq",
+  "tags": []
+}
